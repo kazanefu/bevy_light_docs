@@ -1,0 +1,6 @@
+[book]
+title = "bevy版光の資料"
+authors = ["kazanefu"]
+language = "ja"
+[build]
+build-dir = "../docs"
