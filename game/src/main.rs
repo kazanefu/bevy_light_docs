@@ -1,6 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 use bevy::{prelude::*, window::WindowResolution};
+use bevy_rapier2d::prelude::*;
+mod ending;
+mod game_play_set;
+mod goal;
+mod player;
+mod playing;
 mod settings;
+mod state;
+mod wall;
 
 fn main() {
     // Load settings from settings.toml
@@ -30,6 +38,13 @@ fn main() {
     app.insert_resource(settings);
     // Embed the font asset into the app
     bevy::asset::embedded_asset!(app, "fonts/NotoSansJP-Bold.ttf");
+
+    app.init_state::<state::GameState>()
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(game_play_set::GamePlaySetPlugin)
+        .add_plugins(player::PlayrePlugin)
+        .add_plugins(playing::PlayingPlugin);
+
     // Run the app
     app.run();
 }

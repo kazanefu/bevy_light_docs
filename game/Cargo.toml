@@ -12,6 +12,7 @@ dynamic_linking = ["bevy/dynamic_linking"]
 
 [dependencies]
 bevy = "0.18.1"
+bevy_rapier2d = "0.33"
 serde = { version = "1.0", features = ["derive"] }
 toml = "1.1"
 anyhow = "1.0"
