@@ -2,12 +2,15 @@
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_rapier2d::prelude::*;
 mod ending;
+mod enemy;
+mod fonts;
 mod game_play_set;
 mod goal;
 mod player;
 mod playing;
 mod settings;
 mod state;
+mod textures;
 mod wall;
 
 fn main() {
@@ -40,10 +43,14 @@ fn main() {
     bevy::asset::embedded_asset!(app, "fonts/NotoSansJP-Bold.ttf");
 
     app.init_state::<state::GameState>()
+        .add_plugins(textures::TexturePlugin)
+        .add_plugins(fonts::FontsPlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(game_play_set::GamePlaySetPlugin)
         .add_plugins(player::PlayrePlugin)
-        .add_plugins(playing::PlayingPlugin);
+        .add_plugins(playing::PlayingPlugin)
+        .add_plugins(ending::EndingPlugin)
+        .add_plugins(enemy::EnemyPlugin);
 
     // Run the app
     app.run();

@@ -27,23 +27,25 @@ pub struct Player {
 
 impl Default for Player {
     fn default() -> Self {
-        Self { speed: 20.0 }
+        Self { speed: 200.0 }
     }
 }
 
 impl Player {
-    pub fn spawn(commands: &mut Commands, position: Vec3) -> Entity {
+    pub fn spawn(commands: &mut Commands, position: Vec3, texture: Handle<Image>) -> Entity {
         commands
             .spawn((
                 Player::default(),
                 Transform::from_translation(position),
                 Collider::cuboid(25.0, 25.0),
-                RigidBody::KinematicPositionBased,
-                Sensor,
-                ActiveEvents::COLLISION_EVENTS,
+                RigidBody::Dynamic,
+                GravityScale(0.0),
                 LockedAxes::ROTATION_LOCKED,
+                ActiveEvents::COLLISION_EVENTS,
+                Velocity::default(),
+                Ccd::enabled(),
                 Sprite {
-                    color: Color::srgb(0.0, 0.0, 1.0),
+                    image: texture.clone(),
                     custom_size: Some(Vec2::new(50.0, 50.0)),
                     ..default()
                 },
