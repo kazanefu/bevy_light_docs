@@ -1,6 +1,9 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // リリースビルドではコンソールを非表示にする
+// BevyとBevy Rapierのプリリュードをインポート
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_rapier2d::prelude::*;
+
+// 各モジュールをインポート
 mod ending;
 mod enemy;
 mod fonts;
@@ -14,11 +17,11 @@ mod textures;
 mod wall;
 
 fn main() {
-    // Load settings from settings.toml
+    // settings/settings.tomlから設定を読み込む
     let settings = settings::get_settings();
-    // Create a new Bevy app
+    // Bevyアプリケーションを作成
     let mut app = App::new();
-    // Add default plugins with custom window settings
+    // デフォルトプラグインを追加し、ウィンドウ設定を上書きする
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: settings.window.title.clone(),
@@ -37,9 +40,9 @@ fn main() {
         }),
         ..default()
     }));
-    // Insert the settings resource into the app
+    // 設定をリソースとしてアプリに挿入
     app.insert_resource(settings);
-    // Embed the font asset into the app
+    // 埋め込みフォントを追加
     bevy::asset::embedded_asset!(app, "fonts/NotoSansJP-Bold.ttf");
 
     app.init_state::<state::GameState>()
@@ -52,6 +55,6 @@ fn main() {
         .add_plugins(ending::EndingPlugin)
         .add_plugins(enemy::EnemyPlugin);
 
-    // Run the app
+    // アプリの起動
     app.run();
 }

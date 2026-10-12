@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+// 実行順を制御するためのシステムセットを定義
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum GamePlaySet {
     Input,

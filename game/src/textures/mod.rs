@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+// テクスチャのリソースを定義
 #[derive(Resource)]
 pub struct TextureHandles {
     pub player_texture: Handle<Image>,
@@ -11,6 +12,7 @@ pub struct TexturePlugin;
 
 impl Plugin for TexturePlugin {
     fn build(&self, app: &mut App) {
+        // 埋め込みアセットを登録
         bevy::asset::embedded_asset!(app, "player.png");
         bevy::asset::embedded_asset!(app, "enemy.png");
         bevy::asset::embedded_asset!(app, "goal.png");

@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 
+// 入力情報を2次元ベクトルで表すリソース
 #[derive(Resource, Debug, Clone, Copy, Default)]
 pub struct MoveDirection(pub Vec2);
 
+// 入力に応じてMoveDirectionを更新するシステム
 pub fn set_move_direction(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     key_config: Res<KeyConfig>,
@@ -24,21 +26,27 @@ pub fn set_move_direction(
     move_direction.0 = direction.normalize_or_zero();
 }
 
+// キーの組み合わせを表す構造体
+// 複数キーの組み合わせをサポートするため、最大4つのキーを保持できるようにする
 #[derive(Clone, Copy, Debug)]
 pub struct KeyBinding {
     keys: [Option<KeyCode>; KeyBinding::MAX_KEYS],
 }
 
 impl KeyBinding {
+    // 最大キー数を定義する定数
     pub const MAX_KEYS: usize = 4;
-    pub fn new(keys: [Option<KeyCode>; KeyBinding::MAX_KEYS]) -> Self {
+    // 新しいKeyBindingを作成するコンストラクタ
+    pub const fn new(keys: [Option<KeyCode>; KeyBinding::MAX_KEYS]) -> Self {
         Self { keys }
     }
+    // 今のフレームで押されているかどうかを判定する
     pub fn pressed(&self, input: &ButtonInput<KeyCode>) -> bool {
         self.keys.iter().flatten().any(|&key| input.pressed(key))
     }
 }
 
+// プレイヤーの移動に使用するキー設定を保持するリソース
 #[derive(Resource, Debug, Clone, Copy)]
 pub struct KeyConfig {
     pub up: KeyBinding,
@@ -47,6 +55,7 @@ pub struct KeyConfig {
     pub right: KeyBinding,
 }
 
+// デフォルトのキーコンフィグ
 impl Default for KeyConfig {
     fn default() -> Self {
         Self {

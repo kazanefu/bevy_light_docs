@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 
+// フォントファイルのパス
 pub const FONT_PATH: &str = "embedded://game/fonts/NotoSansJP-Bold.ttf";
 
+// 日本語フォントのリソースを定義
 #[derive(Resource)]
 pub struct JpFont(pub Handle<Font>);
 
@@ -13,6 +15,7 @@ impl Plugin for FontsPlugin {
     }
 }
 
+// 日本語フォントをロードしてリソースとして登録するシステム
 fn setup_fonts(mut commands: Commands, asset_server: Res<AssetServer>) {
     let jp_font_handle = asset_server.load(FONT_PATH);
     commands.insert_resource(JpFont(jp_font_handle));

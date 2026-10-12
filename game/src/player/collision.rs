@@ -14,6 +14,7 @@ impl Plugin for PlayerCollisionPlugin {
     }
 }
 
+// ２つのエンティティのうち、指定されたクエリに一致する最初のエンティティを返す関数
 fn find_entity<Q: QueryData, F: QueryFilter>(
     first: Entity,
     second: Entity,
@@ -24,6 +25,7 @@ fn find_entity<Q: QueryData, F: QueryFilter>(
         .find(|entity| query.get(*entity).is_ok())
 }
 
+// プレイヤーとゴール、敵との衝突を検出するシステム
 fn check_collisions(
     players: Query<Entity, With<Player>>,
     goals: Query<Entity, With<Goal>>,
@@ -32,25 +34,30 @@ fn check_collisions(
     mut ending_message: MessageWriter<EndingMessage>,
 ) {
     for event in collision_events.read() {
+        // 衝突イベントが開始された場合のみ処理する
         let CollisionEvent::Started(first, second, _) = event else {
             continue;
         };
 
+        // 衝突したエンティティのうち、プレイヤーに該当するエンティティを取得する
         let Some(player_entity) = find_entity(*first, *second, &players) else {
             continue;
         };
 
+        // 衝突したエンティティのうち、ゴールまたは敵に該当するエンティティを取得する
         if let Some(goal_entity) = find_entity(*first, *second, &goals) {
             println!(
                 "Player {:?} collided with Goal {:?}",
                 player_entity, goal_entity
             );
+            // ゲームクリアのメッセージを送信する
             ending_message.write(EndingMessage::Clear);
         } else if let Some(enemy_entity) = find_entity(*first, *second, &enemies) {
             println!(
                 "Player {:?} collided with Enemy {:?}",
                 player_entity, enemy_entity
             );
+            // ゲームオーバーのメッセージを送信する
             ending_message.write(EndingMessage::GameOver);
         }
     }

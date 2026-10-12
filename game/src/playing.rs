@@ -9,6 +9,7 @@ impl Plugin for PlayingPlugin {
     }
 }
 
+// ゲームプレイ状態に入ったときに呼び出されるシステム
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,

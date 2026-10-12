@@ -12,17 +12,19 @@ impl Plugin for EndingUiPlugin {
     }
 }
 
+// リスタートボタンが押されたときにゲーム状態をPlayingに変更するシステム
 fn restart_button_system(
     mut button_query: Query<(&Interaction, &mut BackgroundColor), With<RestartButton>>,
     mut state: ResMut<NextState<GameState>>,
+    mut ending_state: ResMut<super::EndingState>,
 ) {
     for (interaction, mut color) in &mut button_query {
         match *interaction {
             Interaction::Pressed => {
                 color.0 = Color::srgb(0.35, 0.75, 0.35);
                 println!("Restart button clicked!");
-                // Change the game state to Playing
                 state.set(GameState::Playing);
+                ending_state.message = None;
             }
             Interaction::Hovered => {
                 color.0 = Color::srgb(0.25, 0.25, 0.25);
@@ -34,6 +36,7 @@ fn restart_button_system(
     }
 }
 
+// ゲーム終了時のUIを生成するシステム
 pub fn spawn_ending_ui(
     mut commands: Commands,
     jp_font: Res<crate::fonts::JpFont>,

@@ -10,11 +10,13 @@ impl Plugin for PlayerControlPlugin {
     }
 }
 
+// プレイヤーの移動を制御するシステム
 pub fn move_player(
     move_direction: Res<input::MoveDirection>,
     mut query: Query<(&mut Velocity, &Player)>,
 ) {
     for (mut velocity, player) in &mut query {
+        // プレイヤーの速度を設定
         velocity.linvel = move_direction.0 * player.speed;
     }
 }
