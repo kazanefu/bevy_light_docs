@@ -50,7 +50,7 @@ fn main() {
         .add_plugins(fonts::FontsPlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(game_play_set::GamePlaySetPlugin)
-        .add_plugins(player::PlayrePlugin)
+        .add_plugins(player::PlayerPlugin)
         .add_plugins(playing::PlayingPlugin)
         .add_plugins(ending::EndingPlugin)
         .add_plugins(enemy::EnemyPlugin);

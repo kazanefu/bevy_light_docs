@@ -5,9 +5,9 @@ mod collision;
 mod control;
 mod input;
 
-pub struct PlayrePlugin;
+pub struct PlayerPlugin;
 
-impl Plugin for PlayrePlugin {
+impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
