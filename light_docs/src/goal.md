@@ -99,3 +99,65 @@ fn setup(
         .entity(goal)
         .insert(DespawnOnExit(GameState::Playing));
 }
+```
+
+次にプレイヤーがゴールに触れたときの処理を追加します。`src/player/collision.rs`というファイルを作ってそこに以下のコードを書きます。
+```rust
+use super::*;
+use crate::goal::Goal;
+use bevy::ecs::query::{QueryData, QueryFilter};
+use bevy_rapier2d::prelude::CollisionEvent;
+
+pub struct PlayerCollisionPlugin;
+
+impl Plugin for PlayerCollisionPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            check_collisions.in_set(crate::game_play_set::GamePlaySet::Detection),
+        );
+    }
+}
+
+// ２つのエンティティのうち、指定されたクエリに一致する最初のエンティティを返す関数
+fn find_entity<Q: QueryData, F: QueryFilter>(
+    first: Entity,
+    second: Entity,
+    query: &Query<Q, F>,
+) -> Option<Entity> {
+    [first, second]
+        .into_iter()
+        .find(|entity| query.get(*entity).is_ok())
+}
+
+// プレイヤーとゴール、敵との衝突を検出するシステム
+fn check_collisions(
+    players: Query<Entity, With<Player>>,
+    goals: Query<Entity, With<Goal>>,
+    mut collision_events: MessageReader<CollisionEvent>,
+) {
+    for event in collision_events.read() {
+        // 衝突イベントが開始された場合のみ処理する
+        let CollisionEvent::Started(first, second, _) = event else {
+            continue;
+        };
+
+        // 衝突したエンティティのうち、プレイヤーに該当するエンティティを取得する
+        let Some(player_entity) = find_entity(*first, *second, &players) else {
+            continue;
+        };
+
+        // 衝突したエンティティのうち、ゴールまたは敵に該当するエンティティを取得する
+        if let Some(goal_entity) = find_entity(*first, *second, &goals) {
+            println!(
+                "Player {:?} collided with Goal {:?}",
+                player_entity, goal_entity
+            );
+        }
+    }
+}
+```
+`PlayerCollisionPlugin`を`PlayerPlugin`に追加します。<br>
+
+これでプレイヤーが家に触れた瞬間にコンソールに`Player プレイヤーのid collided with Goal 家のid`のように表示されるようになったと思います。
+
