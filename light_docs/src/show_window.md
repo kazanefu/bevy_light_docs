@@ -5,12 +5,13 @@
 `src/main.rs`を開き、以下のように書き換えます。
 ```rust
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // リリースビルドではコンソールを非表示にする
-use bevy::prelude::*;
+use bevy::prelude::*; // Bevyの基本機能一式(Unityでのusing UnityEngine;に相当する)
 
+// エントリーポイント
 fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .run();
+    App::new() // Bevyアプリケーションを作成
+        .add_plugins(DefaultPlugins) // デフォルトプラグインを追加。これでウィンドウが表示されるようになる
+        .run(); // アプリの起動
 }
 ```
 
@@ -34,18 +35,21 @@ vsync = true
 
 ## 設定ファイルをビルド時に実行ファイルと同じディレクトリにコピーする
 
-次に、`build.rs`というファイルをプロジェクトディレクトリ直下に作成し、以下のように書きます。
+次に、`build.rs`というファイルをプロジェクトディレクトリ直下に作成し、以下のように書きます。`build.rs`は、Cargoがビルドする際に自動的に実行されるスクリプトです。ここでは、`settings/settings.toml`をビルド時に実行ファイルと同じディレクトリにコピーする処理を行います。
 ```rust
 use std::fs;
 use std::path::Path;
 
 fn main() {
+    // 実行ファイルの出力先ディレクトリを取得
     let out_dir = std::env::var("OUT_DIR").unwrap();
 
-    // target/debug に辿る
+    // target/debug or target/releaseに辿る
     let target_dir = Path::new(&out_dir).ancestors().nth(3).unwrap();
 
+    // コピー先のパス
     let dest = target_dir.join("settings/");
+    // コピー元のパス
     let src = Path::new("settings/");
 
     // 既存削除
@@ -78,7 +82,7 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Result
 
 ## 設定ファイルを読み込む
 
-`src/settings.rs`というファイルを作って以下のように書きます.
+`src/settings.rs`というファイルを作って以下のように書きます。ここでは、設定の構造体の定義と、設定ファイルを読み込む関数を定義しています。<br>
 ```rust
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -142,7 +146,7 @@ pub fn get_settings() -> Settings {
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // リリースビルドではコンソールを非表示にする
 
 use bevy::{prelude::*, window::WindowResolution};
-mod settings;
+mod settings; // 設定のモジュールをインポート
 
 
 fn main() {
