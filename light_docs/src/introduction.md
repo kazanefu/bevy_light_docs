@@ -3,7 +3,7 @@
 ## この資料について
 
 この資料はGammaのBevy初心者向けBevy入門ガイドです。<br>
-「Bevyなんか一回も触ったことない」という初心者でも安心してBevyを始められるよう、基本的なところからUnityの使い方を解説し、簡単なゲームを作れるところまでリードしていきます。(Bevy公式ドキュメント[](https://bevy.org/learn/))
+「Bevyなんか一回も触ったことない」という初心者でも安心してBevyを始められるよう、基本的なところからUnityの使い方を解説し、簡単なゲームを作れるところまでリードしていきます。(Bevy公式ドキュメント[https://bevy.org/](https://bevy.org/))
 
 ![](./images/first_screen_shot.png)<br>
 

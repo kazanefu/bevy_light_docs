@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-fe7efb02.js";
+            window.path_to_searchindex_js = "searchindex-c800e24f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-04c515df.js"></script>
+        <script src="toc-b7b86ee1.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,7 +175,822 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="chapter-1"><a class="header" href="#chapter-1">Chapter 1</a></h1>
+                        <h1 id="目次"><a class="header" href="#目次">目次</a></h1>
+<ul>
+<li><a href="#目次">目次</a></li>
+<li><a href="#はじめに">はじめに</a></li>
+<li><a href="#環境構築">環境構築</a></li>
+<li><a href="#ゲームを作ってみよう">ゲームを作ってみよう</a></li>
+<li><a href="#プロジェクトの作成">プロジェクトの作成</a></li>
+<li><a href="#ゲーム画面を表示する">ゲーム画面を表示する</a></li>
+<li><a href="#ゲーム全体の状態をstateで管理する">ゲームの状態管理</a></li>
+<li><a href="#プレイヤーの移動と表示">Playerの動きと表示</a></li>
+<li><a href="#家を配置当たり判定を付けよう">ゴールの作成</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="はじめに"><a class="header" href="#はじめに">はじめに</a></h1>
+<h2 id="この資料について"><a class="header" href="#この資料について">この資料について</a></h2>
+<p>この資料はGammaのBevy初心者向けBevy入門ガイドです。<br>
+「Bevyなんか一回も触ったことない」という初心者でも安心してBevyを始められるよう、基本的なところからUnityの使い方を解説し、簡単なゲームを作れるところまでリードしていきます。(Bevy公式ドキュメント<a href="https://bevy.org/">https://bevy.org/</a>)</p>
+<p><img src="images/first_screen_shot.png" alt=""><br></p>
+<p>↑こんな感じの帰宅ゲームを作っていきます！</p>
+<p>まずは自分のパソコンの中にBevyの作品を入れるフォルダを作成し、そこに光の資料のGoogleドライブにあるzipファイルを展開します。<br>
+エクスプローラーを開き、PC＞ローカルディスク（C:）の中に「BevyWorks」フォルダを作成しましょう。（慣れている方はお好みでどうぞ。）<br>
+光の資料のドライブにある「bevy_sample_game.zip」を右クリック、「すべて展開」を選択し、参照ボタンから先ほど作成した「BevyWorks」フォルダを選択して.zipファイルを展開します。<br></p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="環境構築"><a class="header" href="#環境構築">環境構築</a></h1>
+<p>続いてゲーム作成に必要なRustの開発環境一式とプログラムを書くのに必要なテキストエディタであるVSCodeをダウンロード、インストールしていきます。<br>
+概要のみ記載しているので、Rustの公式ドキュメントを参考にしたり、VSCodeは既に入れている人に教えてもらいながら進めましょう。<br></p>
+<h2 id="rustupをインストールする"><a class="header" href="#rustupをインストールする">rustupをインストールする</a></h2>
+<p>まずは、<a href="https://doc.rust-jp.rs/book-ja/ch01-01-installation.html">Rustの日本語公式ドキュメント(the book)</a>に従って、Rustのバージョンと関連するツールを管理する「rustup」をインストールします。<br>
+軽く公式ドキュメントに書いてあることをまとめると、以下の手順でインストールできます。</p>
+<ol>
+<li><a href="https://rust-lang.org/tools/install/">https://rust-lang.org/tools/install/</a>に行き、DOWNLOAD RUSTUP-INIT.EXE(X64)をクリックしてダウンロードします。</li>
+<li>ダウンロードした「rustup-init.exe」を実行します。</li>
+<li>インストールの途中で、Visual StudioのC++ビルドツールをインストールするか聞かれるので、まだインストールしていない場合はインストールしてください。</li>
+</ol>
+<ul>
+<li>「C++によるデスクトップ開発」(“Desktop Development with C++”)</li>
+<li>Windows 10または11のSDK</li>
+<li>英語の言語パック(English language pack)コンポーネント</li>
+</ul>
+<ol start="4">
+<li>インストールできたかを確認する</li>
+</ol>
+<ul>
+<li><code>rustc --version</code>と<code>cargo --version</code>をターミナルで実行し、バージョンが表示されればOKです。一応簡単にそれぞれ説明すると、<code>rustc</code>はRustのコンパイラ、<code>cargo</code>はRustのビルドツール兼パッケージマネージャーです。</li>
+</ul>
+<h2 id="vscodeをインストールする"><a class="header" href="#vscodeをインストールする">VSCodeをインストールする</a></h2>
+<p>BevyではRustという言語でプログラムを書いていくことになります。<br>
+このガイドではVSCodeと呼ばれるテキストエディタ(テキストファイルを編集するソフト)を用いることとします。(任意のエディタを使っても構いません。なんならメモ帳でも(おすすめはしない))<br>
+公式サイト（https://code.visualstudio.com/download）にアクセスしてダウンロード、インストーラを起動して指示に従ってインストールします。基本的にデフォルトの設定で問題ないと思いますが、「PATHへの追加」の項目はONにしておきましょう。<br>
+VSCodeを起動し、拡張機能の検索欄に「rustanalyzer」と入力し、RustAnalyzerをインストールします。<br></p>
+<p>次のページからゲーム制作が始まります。<br>
+途中で様々なエラーが表示されるかと思いますが、この資料のおまけページにガイドで出そうなエラー集のページを設けているので、そちらを参考にしてみたり、rustのコンパイラはエラーメッセージが非常に親切なので、ちゃんと読んでみると解決できることが多いです。また、<code>rustc --explain &lt;エラー番号&gt;</code>でエラーの詳細を確認できます。<br>
+とにかくわからないことがあれば筆者(かざね)にどしどし聞いてみてください！</p>
+<p><em><strong>GammaでBevyを使ってゲームを作り上げよう!</strong></em></p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="ゲームを作ってみよう"><a class="header" href="#ゲームを作ってみよう">ゲームを作ってみよう!</a></h1>
+<p>まずは、<a href="#はじめに">はじめに</a>でダウンロードしたサンプルゲームのディレクトリをテキストエディタで開いたり、ターミナルでビルド&amp;実行してみましょう。<br>
+CLI(Command Line Interface)での操作に慣れていない人もいるかと思いますが、使えると便利ですし、この資料では簡単なコマンドしか使わないので、ぜひ覚えていきましょう。<br></p>
+<pre><code class="language-bash"># ディレクトリを開く
+# ここでは、Cドライブの直下にBevyWorksというフォルダを作成し、その中にゲームのサンプルを展開したと仮定しています。
+# ゲームのzipファイルを展開した場所は人によって違うと思うので、適宜読み替えてください。
+cd BevyWorks/bevy_sample_game
+# VSCodeで開く
+code .
+# ビルド&amp;実行する
+cargo run
+</code></pre>
+<blockquote>
+<p>一応説明しておくと、<code>cargo run</code>は、Rustのビルドツール兼パッケージマネージャーであるCargoに「ビルドして実行してね」とお願いするコマンドです。
+ビルドだけする場合は<code>cargo build</code>を使います。
+リリースビルドをする場合は<code>cargo build --release</code>のように<code>--release</code>とつけます。</p>
+</blockquote>
+<p>矢印キーor WASDキーでキャラクターを動かすことができます。<br></p>
+<p>試しに、プレイヤーの移動スピードや敵の移動スピードを変えてみましょう。<br></p>
+<p><code>src/player/mod.rs</code>の中にある</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl Default for Player {
+    fn default() -&gt; Self {
+        // デフォルトの移動速度を設定
+        Self { speed: 200.0 }
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>という箇所のspeedの値を変えると、プレイヤーの移動スピードが変わります。<br></p>
+<p>似たような感じでenemyの移動スピードも変えられます。<br></p>
+<p><code>src/enemy.rs</code>の中にenemyのspeedの値を変える箇所があるので、探して変えてみましょう。<br></p>
+<p>値を変えたら、再度<code>cargo run</code>でビルド&amp;実行して、ゲーム内での挙動を確認してみましょう。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="プロジェクトの作成"><a class="header" href="#プロジェクトの作成">プロジェクトの作成</a></h1>
+<p>先ほどのサンプルゲームのようなものを実際に0から作っていきます！<br>
+まずは、プロジェクトを作成するために、ターミナルで<code>BevyWorks</code>ディレクトリ(ディレクトリ名は人それぞれなので読み替えてください)にいる状態で以下のコマンドを実行します。</p>
+<pre><code class="language-bash">cargo new game
+</code></pre>
+<p>これを実行すると、<code>BevyWorks</code>ディレクトリの中に<code>game</code>という名前のディレクトリが作成され、その中にRustのプロジェクトの雛形が作成されます。<br></p>
+<p>次に、作成したプロジェクトをVSCodeで開きます。<br></p>
+<pre><code class="language-bash">code ./game
+</code></pre>
+<p>開くと以下のようなディレクトリ構造になっていると思います。<br></p>
+<pre><code>game
+├── Cargo.lock
+├── Cargo.toml
+├── target/
+└── src/
+    └── main.rs
+</code></pre>
+<p>それぞれのフォルダの解説を軽くすると、<code>Cargo.lock</code>は依存関係のバージョンを固定するためのファイル(人間が直接いじることはほとんどない)、<code>Cargo.toml</code>はプロジェクトの設定や依存関係を記述するファイル、<code>target/</code>はビルドした際に生成されるファイルが入るディレクトリ、<code>src/</code>はソースコードを置くディレクトリで、その中の<code>main.rs</code>がエントリーポイントとなるRustのソースコードです。<br>
+あれ？呪文に聞こえるって？大丈夫です、慣れればすぐに理解できるようになります。<br></p>
+<p>このままでもRustのプロジェクトとしてはビルド&amp;実行できますが、Bevyを使うために<code>Cargo.toml</code>に依存関係を追加していきます。<br>
+<code>Cargo.toml</code>を開き、以下のように書き換えます。</p>
+<pre><code class="language-toml">[package]
+name = "game"
+version = "0.1.0"
+edition = "2024"
+
+[profile.dev]
+opt-level = 1
+[profile.dev.package."*"]
+opt-level = 3
+[features]
+dynamic_linking = ["bevy/dynamic_linking"]
+
+[dependencies]
+bevy = "0.18.1"
+bevy_rapier2d = "0.33"
+serde = { version = "1.0", features = ["derive"] }
+toml = "1.1"
+anyhow = "1.0"
+</code></pre>
+<p>Bevyを使えるようにするために、<code>[dependencies]</code>のところに<code>bevy = "0.18.1"</code>を追加しました。<br>
+また、<code>bevy_rapier2d</code>は物理演算を行うためのライブラリで、<code>serde</code>はデータのシリアライズ/デシリアライズを行うためのライブラリ、<code>toml</code>はTOML形式のデータを扱うためのライブラリ、<code>anyhow</code>はエラー処理を簡単にするためのライブラリです。<br></p>
+<blockquote>
+<p>クレート(crate)は、Rustコンパイラが一度に考慮する最小限のコードです。クレートは2種類の形態のうちいずれかです:バイナリクレートか、ライブラリクレートです。**バイナリクレート（binary crate）**は、
+コマンドラインプログラムやサーバなどの実行可能形式にコンパイルされ、実行することができるプログラムです。**ライブラリクレート（library crate）**は、<code>main</code>関数を持たず、実行可能形式へとコンパイルされません。代わりに、複数のプロジェクトで共有されることを想定した機能を定義するものです。「クレート」と言うときの、ほとんどの場合それはライブラリクレートのことであり、一般的なプログラミング概念の「ライブラリ」と同じ意味で使用します</p>
+</blockquote>
+<blockquote>
+<p>この辺はとりあえずそうしておけばいいと思ってれば[profile.dev]のopt-levelはビルドの最適化レベルを指定するもので、デフォルトでは1ですが、リリースビルドでは3に設定しています。<br>
+[profile.dev.package.“*”]のopt-levelは、すべての依存関係に対して最適化レベルを3に設定するためのものです。<br>
+[features]のdynamic_linkingはBevyの動的リンクを有効にするための設定です。<br></p>
+</blockquote>
+<p>次に、<code>.cargo/config.toml</code>を作成し、以下のように書きます。</p>
+<pre><code class="language-toml">[target.x86_64-pc-windows-msvc]
+linker = "rust-lld.exe"
+</code></pre>
+<p>これで、プロジェクトの作成とBevyの依存関係の追加が完了しました。<br>
+次のステップでは、実際にゲームを作るためのコードを書いていきます。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="ゲーム画面を表示する"><a class="header" href="#ゲーム画面を表示する">ゲーム画面を表示する</a></h1>
+<p>現在の状態で<code>cargo run</code>でビルド&amp;実行しても標準出力(ターミナル)に<code>Hello, world!</code>と表示されるだけで、ゲーム画面は表示されません。<br>
+ゲーム画面を表示するためには、Bevyの<code>App</code>に<code>DefaultPlugins</code>を追加する必要があります。<br>
+<code>src/main.rs</code>を開き、以下のように書き換えます。</p>
+<pre class="playground"><code class="language-rust">#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // リリースビルドではコンソールを非表示にする
+use bevy::prelude::*;
+
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .run();
+}</code></pre>
+<p><img src="images/window.png" alt=""><br></p>
+<p>これでゲームのウィンドウが立ち上がるようになりました。<br>
+このページのこれから先は、ウィンドウの大きさやフルスクリーンにするかなどの設定ファイルを作成して、それを読み込むことで、ゲームのウィンドウの設定を変更していきます。少しめんどくさいので、最初はこのままでも構いません。<br></p>
+<h2 id="ウィンドウのサイズ等についての設定ファイルを作成する"><a class="header" href="#ウィンドウのサイズ等についての設定ファイルを作成する">ウィンドウのサイズ等についての設定ファイルを作成する</a></h2>
+<p>まず、プロジェクトディレクトリ直下に<code>settings/settings.toml</code>というファイルを作成します。<br>
+中は以下のような形式で書きます</p>
+<pre><code class="language-toml">[window]
+width = 800
+height = 600
+title = "Game"
+fullscreen = false
+vsync = true
+</code></pre>
+<h2 id="設定ファイルをビルド時に実行ファイルと同じディレクトリにコピーする"><a class="header" href="#設定ファイルをビルド時に実行ファイルと同じディレクトリにコピーする">設定ファイルをビルド時に実行ファイルと同じディレクトリにコピーする</a></h2>
+<p>次に、<code>build.rs</code>というファイルをプロジェクトディレクトリ直下に作成し、以下のように書きます。</p>
+<pre class="playground"><code class="language-rust">use std::fs;
+use std::path::Path;
+
+fn main() {
+    let out_dir = std::env::var("OUT_DIR").unwrap();
+
+    // target/debug に辿る
+    let target_dir = Path::new(&amp;out_dir).ancestors().nth(3).unwrap();
+
+    let dest = target_dir.join("settings/");
+    let src = Path::new("settings/");
+
+    // 既存削除
+    if dest.exists() {
+        fs::remove_dir_all(&amp;dest).unwrap();
+    }
+
+    // コピー
+    copy_dir_all(src, &amp;dest).unwrap();
+}
+
+// 再帰コピー
+fn copy_dir_all(src: impl AsRef&lt;Path&gt;, dst: impl AsRef&lt;Path&gt;) -&gt; std::io::Result&lt;()&gt; {
+    fs::create_dir_all(&amp;dst)?;
+
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        } else {
+            fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        }
+    }
+
+    Ok(())
+}</code></pre>
+<h2 id="設定ファイルを読み込む"><a class="header" href="#設定ファイルを読み込む">設定ファイルを読み込む</a></h2>
+<p><code>src/settings.rs</code>というファイルを作って以下のように書きます.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
+
+// 設定を表す構造体
+#[derive(Resource, Debug, Clone, Deserialize, Serialize)]
+pub struct Settings {
+    pub window: WindowSettings,
+}
+
+// ウィンドウ設定を表す構造体
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct WindowSettings {
+    pub width: u32,
+    pub height: u32,
+    pub title: String,
+    pub fullscreen: bool,
+    pub vsync: bool,
+}
+
+// デフォルトの設定を提供するための実装
+impl Default for Settings {
+    fn default() -&gt; Self {
+        Self {
+            window: WindowSettings {
+                width: 800,
+                height: 600,
+                title: "Game".to_string(),
+                fullscreen: false,
+                vsync: true,
+            },
+        }
+    }
+}
+
+use std::fs;
+
+use anyhow::Error;
+
+// 設定をロードする関数
+fn load_settings() -&gt; Result&lt;Settings, Error&gt; {
+    let settings_str = fs::read_to_string("settings/settings.toml")?;
+    let settings: Settings = toml::from_str(&amp;settings_str)?;
+    Ok(settings)
+}
+
+// 設定を取得する関数。ロードに失敗した場合はデフォルト設定を返す。
+pub fn get_settings() -&gt; Settings {
+    match load_settings() {
+        Ok(settings) =&gt; settings,
+        Err(err) =&gt; {
+            eprintln!("Failed to load settings: {err}");
+            Settings::default()
+        }
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>また、<code>src/main.rs</code>を以下のように書き換えます。</p>
+<pre class="playground"><code class="language-rust">#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // リリースビルドではコンソールを非表示にする
+
+use bevy::{prelude::*, window::WindowResolution};
+mod settings;
+
+
+fn main() {
+    // settings/settings.tomlから設定を読み込む
+    let settings = settings::get_settings();
+    // Bevyアプリケーションを作成
+    let mut app = App::new();
+    // デフォルトプラグインを追加し、ウィンドウ設定を上書きする
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            title: settings.window.title.clone(),
+            resolution: WindowResolution::new(settings.window.width, settings.window.height),
+            mode: if settings.window.fullscreen {
+                bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Primary)
+            } else {
+                bevy::window::WindowMode::Windowed
+            },
+            present_mode: if settings.window.vsync {
+                bevy::window::PresentMode::AutoVsync
+            } else {
+                bevy::window::PresentMode::AutoNoVsync
+            },
+            ..default()
+        }),
+        ..default()
+    }));
+    // 設定をリソースとしてアプリに挿入
+    app.insert_resource(settings);
+    // アプリの起動
+    app.run();
+}</code></pre>
+<p>これで<code>settings/settings.toml</code>の内容に応じて、ゲームのウィンドウのサイズやタイトル、フルスクリーンモード、VSyncの有効/無効を設定できるようになりました。<br>
+適当に数値を変えて、<code>cargo run</code>でビルド&amp;実行してみましょう。</p>
+<p>次はいよいよゲームの中身を作っていきます。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="ゲーム全体の状態をstateで管理する"><a class="header" href="#ゲーム全体の状態をstateで管理する">ゲーム全体の状態をStateで管理する</a></h1>
+<p>今回作るゲームでは大きく分けて、ゲームプレイ中, 終了(クリア or ゲームオーバー)の2つの状態が存在します。<code>src/state.rs</code>というファイルを作って以下のようにゲームの状態の定義をします。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+
+// ゲームの状態を定義
+#[derive(Debug, Default, Clone, Eq, PartialEq, Hash, Copy, States)]
+pub enum GameState {
+    #[default]
+    Playing,
+    Ending,
+}
+<span class="boring">}</span></code></pre>
+<p>また、アプリケーションにこの状態を追加するために、<code>src/main.rs</code>を以下のように書き換えます。</p>
+<pre class="playground"><code class="language-rust">#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // リリースビルドではコンソールを非表示にする
+
+use bevy::{prelude::*, window::WindowResolution};
+mod settings;
+mod state;
+
+
+fn main() {
+    // settings/settings.tomlから設定を読み込む
+    let settings = settings::get_settings();
+    // Bevyアプリケーションを作成
+    let mut app = App::new();
+    // デフォルトプラグインを追加し、ウィンドウ設定を上書きする
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            title: settings.window.title.clone(),
+            resolution: WindowResolution::new(settings.window.width, settings.window.height),
+            mode: if settings.window.fullscreen {
+                bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Primary)
+            } else {
+                bevy::window::WindowMode::Windowed
+            },
+            present_mode: if settings.window.vsync {
+                bevy::window::PresentMode::AutoVsync
+            } else {
+                bevy::window::PresentMode::AutoNoVsync
+            },
+            ..default()
+        }),
+        ..default()
+    }));
+    // 設定をリソースとしてアプリに挿入
+    app.insert_resource(settings);
+
+    app.init_state::&lt;state::GameState&gt;(); // ゲームの状態を追加
+    
+    // アプリの起動
+    app.run();
+}</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="プレイヤーの移動と表示"><a class="header" href="#プレイヤーの移動と表示">プレイヤーの移動と表示</a></h1>
+<p>まず、Updateの実行順序を制御するために、<code>src/game_play_set.rs</code>というファイルを作成し、以下のコードを追加します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+
+// 実行順を制御するためのシステムセットを定義
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone, Copy)]
+pub enum GamePlaySet {
+    Input,
+    Detection,
+    Movement,
+    Rendering,
+}
+
+pub struct GamePlaySetPlugin;
+
+impl Plugin for GamePlaySetPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        app.configure_sets(
+            Update,
+            (
+                GamePlaySet::Input,
+                GamePlaySet::Detection.after(GamePlaySet::Input),
+                GamePlaySet::Movement.after(GamePlaySet::Detection),
+                GamePlaySet::Rendering.after(GamePlaySet::Movement),
+            )
+                .chain(),
+        );
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>そしたら、<code>src/player/mod.rs</code>というファイルを作成し、PlayerについてのものをまとめるプラグインとPlayerコンポーネントとPlayerをスポーンするための関数を作成します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
+
+pub struct PlayerPlugin;
+
+impl Plugin for PlayerPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        
+    }
+}
+
+// プレイヤーのコンポーネント
+// 移動速度を保持する
+#[derive(Component)]
+pub struct Player {
+    speed: f32,
+}
+
+// デフォルトトレイトを実装
+impl Default for Player {
+    fn default() -&gt; Self {
+        // デフォルトの移動速度を設定
+        Self { speed: 200.0 }
+    }
+}
+
+impl Player {
+    // プレイヤーをスポーンしてエンティティを返す関数
+    // エンティティはidとして返され、後で参照するために使用できる
+    pub fn spawn(commands: &amp;mut Commands, position: Vec3, texture: Handle&lt;Image&gt;) -&gt; Entity {
+        commands
+            .spawn((
+                // 速度を持つプレイヤーコンポーネントを追加
+                Player::default(),
+                // Transformコンポーネントを追加して位置を設定
+                Transform::from_translation(position),
+                // 長方形のコライダーを追加
+                Collider::cuboid(25.0, 25.0),
+                // 2D物理エンジンの剛体を追加
+                RigidBody::Dynamic,
+                // 重力の影響を受けないように設定
+                GravityScale(0.0),
+                // 回転をロックして、プレイヤーが回転しないように設定
+                LockedAxes::ROTATION_LOCKED,
+                // 衝突時のイベントを有効化
+                ActiveEvents::COLLISION_EVENTS,
+                // 速度を初期化
+                Velocity::default(),
+                // Continuous Collision Detectionを有効化
+                Ccd::enabled(),
+                // スプライトを追加して見た目を設定
+                Sprite {
+                    image: texture.clone(),
+                    custom_size: Some(Vec2::new(50.0, 50.0)),
+                    ..default()
+                },
+            ))
+            .id()
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>次にプレイヤーの入力を処理するシステムを作成します。<code>src/player/input.rs</code>というファイルを作成し、以下のコードを追加します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+
+// 入力情報を2次元ベクトルで表すリソース
+#[derive(Resource, Debug, Clone, Copy, Default)]
+pub struct MoveDirection(pub Vec2);
+
+// 入力に応じてMoveDirectionを更新するシステム
+pub fn set_move_direction(
+    keyboard_input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
+    key_config: Res&lt;KeyConfig&gt;,
+    mut move_direction: ResMut&lt;MoveDirection&gt;,
+) {
+    let mut direction = Vec2::ZERO;
+    if key_config.up.pressed(&amp;keyboard_input) {
+        direction.y += 1.0;
+    }
+    if key_config.down.pressed(&amp;keyboard_input) {
+        direction.y -= 1.0;
+    }
+    if key_config.left.pressed(&amp;keyboard_input) {
+        direction.x -= 1.0;
+    }
+    if key_config.right.pressed(&amp;keyboard_input) {
+        direction.x += 1.0;
+    }
+    move_direction.0 = direction.normalize_or_zero();
+}
+
+// キーの組み合わせを表す構造体
+// 複数キーの組み合わせをサポートするため、最大4つのキーを保持できるようにする
+#[derive(Clone, Copy, Debug)]
+pub struct KeyBinding {
+    keys: [Option&lt;KeyCode&gt;; KeyBinding::MAX_KEYS],
+}
+
+impl KeyBinding {
+    // 最大キー数を定義する定数
+    pub const MAX_KEYS: usize = 4;
+    // 新しいKeyBindingを作成するコンストラクタ
+    pub const fn new(keys: [Option&lt;KeyCode&gt;; KeyBinding::MAX_KEYS]) -&gt; Self {
+        Self { keys }
+    }
+    // 今のフレームで押されているかどうかを判定する
+    pub fn pressed(&amp;self, input: &amp;ButtonInput&lt;KeyCode&gt;) -&gt; bool {
+        self.keys.iter().flatten().any(|&amp;key| input.pressed(key))
+    }
+}
+
+// プレイヤーの移動に使用するキー設定を保持するリソース
+#[derive(Resource, Debug, Clone, Copy)]
+pub struct KeyConfig {
+    pub up: KeyBinding,
+    pub down: KeyBinding,
+    pub left: KeyBinding,
+    pub right: KeyBinding,
+}
+
+// デフォルトのキーコンフィグ
+impl Default for KeyConfig {
+    fn default() -&gt; Self {
+        Self {
+            up: KeyBinding::new([Some(KeyCode::KeyW), Some(KeyCode::ArrowUp), None, None]),
+            down: KeyBinding::new([Some(KeyCode::KeyS), Some(KeyCode::ArrowDown), None, None]),
+            left: KeyBinding::new([Some(KeyCode::KeyA), Some(KeyCode::ArrowLeft), None, None]),
+            right: KeyBinding::new([Some(KeyCode::KeyD), Some(KeyCode::ArrowRight), None, None]),
+        }
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>そしたら、この入力情報を使ってプレイヤーを動かすシステムを作成します。<code>src/player/control.rs</code>というファイルを作成し、以下のコードを追加します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use super::*;
+pub struct PlayerControlPlugin;
+
+impl Plugin for PlayerControlPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        app.add_systems(
+            FixedUpdate,
+            move_player.in_set(crate::game_play_set::GamePlaySet::Movement),
+        );
+    }
+}
+
+// プレイヤーの移動を制御するシステム
+pub fn move_player(
+    move_direction: Res&lt;input::MoveDirection&gt;,
+    mut query: Query&lt;(&amp;mut Velocity, &amp;Player)&gt;,
+) {
+    for (mut velocity, player) in &amp;mut query {
+        // プレイヤーの速度を設定
+        velocity.linvel = move_direction.0 * player.speed;
+    }
+}
+<span class="boring">}</span></code></pre>
+<p><code>src/player/mod.rs</code>のPlayerPluginにここまでのシステムやリソースを追加します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>mod control;
+mod input;
+
+impl Plugin for PlayerPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        app.add_systems(
+            Update,
+            input::set_move_direction.in_set(crate::game_play_set::GamePlaySet::Input),
+        )
+        .init_resource::&lt;input::MoveDirection&gt;()
+        .init_resource::&lt;input::KeyConfig&gt;()
+        .add_plugins(control::PlayerControlPlugin);
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。<code>src/textures/mod.rs</code>というファイルを作成し、また、<code>src/textures/player.png</code>という画像を用意します。<code>src/textures/mod.rs</code>には以下のコードを追加します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+
+// テクスチャのリソースを定義
+#[derive(Resource)]
+pub struct TextureHandles {
+    pub player_texture: Handle&lt;Image&gt;,
+}
+
+pub struct TexturePlugin;
+
+impl Plugin for TexturePlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        // 埋め込みアセットを登録
+        bevy::asset::embedded_asset!(app, "player.png");
+        app.add_systems(Startup, load_textures);
+    }
+}
+
+fn load_textures(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
+    let player_texture_handle = asset_server.load("embedded://game/textures/player.png");
+
+    commands.insert_resource(TextureHandles {
+        player_texture: player_texture_handle,
+    });
+}
+<span class="boring">}</span></code></pre>
+<p>ではいよいよPlayerをゲーム上にスポーンさせます。Playerは<code>GameState</code>が<code>Playing</code>になったときにスポーンさせます。<code>src/playing.rs</code>というファイルを作成し、以下のコードを追加します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use crate::{player::Player, state::GameState};
+use bevy::prelude::*;
+
+
+pub struct PlayingPlugin;
+
+impl Plugin for PlayingPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        app.add_systems(OnEnter(GameState::Playing), setup);
+    }
+}
+
+// ゲームプレイ状態に入ったときに呼び出されるシステム
+fn setup(
+    mut commands: Commands,
+    asset_server: Res&lt;AssetServer&gt;,
+    textures: Option&lt;Res&lt;crate::textures::TextureHandles&gt;&gt;,
+    cameras: Query&lt;Entity, With&lt;Camera2d&gt;&gt;,
+) {
+    let player_texture = match textures {
+        Some(textures) =&gt; (
+            textures.player_texture.clone(),
+        ),
+        None =&gt; (
+            asset_server.load("embedded://game/textures/player.png"),
+        ),
+    };
+    // カメラが存在しない場合は新しくカメラをスポーンする
+    if cameras.is_empty() {
+        commands.spawn(Camera2d);
+    }
+    let player = Player::spawn(&amp;mut commands, Vec3::new(-300.0, 0.0, 0.0), player_texture);
+    commands
+        .entity(player)
+        .insert(DespawnOnExit(GameState::Playing));
+}
+<span class="boring">}</span></code></pre>
+<p>あとは、<code>src/main.rs</code>に作ったプラグインとRapierPhysicsPluginを追加して、ゲームを実行してみましょう。(各モジュールを<code>mod</code>で宣言するのを忘れないようにしてください。また、bevy_rapier2d::prelude::*をuseするのも忘れないようにしてください。)</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>app.init_state::&lt;state::GameState&gt;()
+        .add_plugins(textures::TexturePlugin)
+        .add_plugins(RapierPhysicsPlugin::&lt;NoUserData&gt;::default())
+        .add_plugins(game_play_set::GamePlaySetPlugin)
+        .add_plugins(player::PlayerPlugin)
+        .add_plugins(playing::PlayingPlugin)
+<span class="boring">}</span></code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="家を配置当たり判定を付けよう"><a class="header" href="#家を配置当たり判定を付けよう">家を配置、当たり判定を付けよう</a></h1>
+<p>プレイヤー同様に、ゴールの家も配置します。<code>src/gaol.rs</code>というファイルを作成し、以下のように書きます。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
+
+// ゴールのコンポーネント
+// タグとして使うだけなので、フィールドは持たない
+#[derive(Component)]
+pub struct Goal;
+
+impl Goal {
+    pub fn spawn(commands: &amp;mut Commands, position: Vec3, texture: Handle&lt;Image&gt;) -&gt; Entity {
+        commands
+            .spawn((
+                Goal,
+                Transform::from_translation(position),
+                // 物理的に動かないように固定する
+                RigidBody::Fixed,
+                Collider::cuboid(25.0, 25.0),
+                ActiveEvents::COLLISION_EVENTS,
+                Sprite {
+                    image: texture.clone(),
+                    color: Color::WHITE,
+                    custom_size: Some(Vec2::new(50.0, 50.0)),
+                    ..default()
+                },
+            ))
+            .id()
+    }
+}
+<span class="boring">}</span></code></pre>
+<p><code>src/texturers/gaol.png</code>という画像を用意して、ゴールの家の見た目として使います。また、プレイヤー同様に<code>TextureHandles</code>リソースにゴールのテクスチャを追加します。</p>
+<p><code>src/textures/mod.rs</code>を以下のように書き換えます。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+
+// テクスチャのリソースを定義
+#[derive(Resource)]
+pub struct TextureHandles {
+    pub player_texture: Handle&lt;Image&gt;,
+    pub goal_texture: Handle&lt;Image&gt;,
+}
+
+pub struct TexturePlugin;
+
+impl Plugin for TexturePlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        // 埋め込みアセットを登録
+        bevy::asset::embedded_asset!(app, "player.png");
+        bevy::asset::embedded_asset!(app, "goal.png");
+        app.add_systems(Startup, load_textures);
+    }
+}
+
+fn load_textures(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
+    let player_texture_handle = asset_server.load("embedded://game/textures/player.png");
+    let goal_texture_handle = asset_server.load("embedded://game/textures/goal.png");
+    commands.insert_resource(TextureHandles {
+        player_texture: player_texture_handle,
+        goal_texture: goal_texture_handle,
+    });
+}
+<span class="boring">}</span></code></pre>
+<p>また、<code>src/playing.rs</code>の<code>setup</code>関数内でゴールの家をスポーンさせます。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn setup(
+    mut commands: Commands,
+    asset_server: Res&lt;AssetServer&gt;,
+    textures: Option&lt;Res&lt;crate::textures::TextureHandles&gt;&gt;,
+    cameras: Query&lt;Entity, With&lt;Camera2d&gt;&gt;,
+) {
+    let (player_texture, goal_texture) = match textures {
+        Some(textures) =&gt; (
+            textures.player_texture.clone(),
+            textures.goal_texture.clone(),
+        ),
+        None =&gt; (
+            asset_server.load("embedded://game/textures/player.png"),
+            asset_server.load("embedded://game/textures/goal.png"),
+        ),
+    };
+    if cameras.is_empty() {
+        commands.spawn(Camera2d);
+    }
+    let player = Player::spawn(&amp;mut commands, Vec3::new(-300.0, 0.0, 0.0), player_texture);
+    commands
+        .entity(player)
+        .insert(DespawnOnExit(GameState::Playing));
+    let goal = Goal::spawn(&amp;mut commands, Vec3::new(200.0, 0.0, 0.0), goal_texture);
+    commands
+        .entity(goal)
+        .insert(DespawnOnExit(GameState::Playing));
+}
+<span class="boring">}</span></code></pre>
+<p>次にプレイヤーがゴールに触れたときの処理を追加します。<code>src/player/collision.rs</code>というファイルを作ってそこに以下のコードを書きます。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use super::*;
+use crate::goal::Goal;
+use bevy::ecs::query::{QueryData, QueryFilter};
+use bevy_rapier2d::prelude::CollisionEvent;
+
+pub struct PlayerCollisionPlugin;
+
+impl Plugin for PlayerCollisionPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        app.add_systems(
+            Update,
+            check_collisions.in_set(crate::game_play_set::GamePlaySet::Detection),
+        );
+    }
+}
+
+// ２つのエンティティのうち、指定されたクエリに一致する最初のエンティティを返す関数
+fn find_entity&lt;Q: QueryData, F: QueryFilter&gt;(
+    first: Entity,
+    second: Entity,
+    query: &amp;Query&lt;Q, F&gt;,
+) -&gt; Option&lt;Entity&gt; {
+    [first, second]
+        .into_iter()
+        .find(|entity| query.get(*entity).is_ok())
+}
+
+// プレイヤーとゴール、敵との衝突を検出するシステム
+fn check_collisions(
+    players: Query&lt;Entity, With&lt;Player&gt;&gt;,
+    goals: Query&lt;Entity, With&lt;Goal&gt;&gt;,
+    mut collision_events: MessageReader&lt;CollisionEvent&gt;,
+) {
+    for event in collision_events.read() {
+        // 衝突イベントが開始された場合のみ処理する
+        let CollisionEvent::Started(first, second, _) = event else {
+            continue;
+        };
+
+        // 衝突したエンティティのうち、プレイヤーに該当するエンティティを取得する
+        let Some(player_entity) = find_entity(*first, *second, &amp;players) else {
+            continue;
+        };
+
+        // 衝突したエンティティのうち、ゴールまたは敵に該当するエンティティを取得する
+        if let Some(goal_entity) = find_entity(*first, *second, &amp;goals) {
+            println!(
+                "Player {:?} collided with Goal {:?}",
+                player_entity, goal_entity
+            );
+        }
+    }
+}
+<span class="boring">}</span></code></pre>
+<p><code>PlayerCollisionPlugin</code>を<code>PlayerPlugin</code>に追加します。<br></p>
+<p>これでプレイヤーが家に触れた瞬間にコンソールに<code>Player プレイヤーのid collided with Goal 家のid</code>のように表示されるようになったと思います。</p>
 
                     </main>
 
