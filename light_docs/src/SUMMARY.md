@@ -9,3 +9,4 @@
 - [ゲームの状態管理](./about_state.md)
 - [Playerの動きと表示](./player_movement.md)
 - [ゴールの作成](./goal.md)
+- [クリア画面を作る](./ending.md)

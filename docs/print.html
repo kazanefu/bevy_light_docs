@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-e731b679.js";
+            window.path_to_searchindex_js = "searchindex-c63ee9a5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-b7b86ee1.js"></script>
+        <script src="toc-a2832684.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -995,6 +995,284 @@ fn check_collisions(
 <span class="boring">}</span></code></pre>
 <p><code>PlayerCollisionPlugin</code>を<code>PlayerPlugin</code>に追加します。<br></p>
 <p>これでプレイヤーが家に触れた瞬間にコンソールに<code>Player プレイヤーのid collided with Goal 家のid</code>のように表示されるようになったと思います。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="クリア画面を作る"><a class="header" href="#クリア画面を作る">クリア画面を作る</a></h1>
+<p>まず、<code>src/ending/mod.rs</code>というファイルを作成し、ゲーム終了時に送信するメッセージの定義と、そのメッセージを処理するシステムを作ります。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+use crate::state::GameState;
+pub struct EndingPlugin;
+
+// ゲーム終了メッセージを定義する列挙型
+#[derive(Message, Copy, Clone, Debug)]
+pub enum EndingMessage {
+    Clear,
+    GameOver,
+}
+
+// ゲーム終了状態を保持するリソース
+#[derive(Resource, Debug, Clone, Default)]
+pub struct EndingState {
+    pub message: Option&lt;EndingMessage&gt;,
+}
+
+impl EndingMessage {
+    // リザルト画面での背景色を返すメソッド
+    pub fn background_color(&amp;self) -&gt; Color {
+        match self {
+            EndingMessage::Clear =&gt; Color::srgb(0.0, 1.0, 0.0),
+            EndingMessage::GameOver =&gt; Color::srgb(1.0, 0.0, 0.0),
+        }
+    }
+    // リザルト画面でのテキストを返すメソッド
+    pub fn text(&amp;self) -&gt; &amp;'static str {
+        match self {
+            EndingMessage::Clear =&gt; "Game Clear !!!!!!!!!!!!!!!!!!!!!!!!",
+            EndingMessage::GameOver =&gt; "Game Over !!!!!!!!!!!!!!!!!!!!!!!!",
+        }
+    }
+}
+
+impl Plugin for EndingPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        app.add_message::&lt;EndingMessage&gt;()
+            .insert_resource(EndingState::default())
+            .add_systems(
+                Update,
+                handle_ending_message.in_set(crate::game_play_set::GamePlaySet::Detection),
+            );
+    }
+}
+
+// ゲーム終了メッセージを処理するシステム
+fn handle_ending_message(
+    mut ending_message: MessageReader&lt;EndingMessage&gt;,
+    mut state: ResMut&lt;NextState&lt;GameState&gt;&gt;,
+    mut ending_state: ResMut&lt;EndingState&gt;,
+) {
+    for message in ending_message.read() {
+        println!("Ending message received: {:?}", message);
+        // ゲーム終了状態を更新し、ゲーム状態をEndingに設定する
+        ending_state.message = Some(*message);
+        // GameStateをEndingに変更する
+        state.set(GameState::Ending);
+    }
+}
+
+<span class="boring">}</span></code></pre>
+<p>これで、ゲーム終了時に送信されるメッセージを処理し、ゲーム状態を<code>Ending</code>に変更するシステムが完成しました。<br></p>
+<p>UIで使うためのフォントを読み込んでリソースに追加するシステムを作ります。<code>src/fonts/mod.rs</code>というファイルを作成し、以下のコードを追加します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+
+// フォントファイルのパス
+pub const FONT_PATH: &amp;str = "embedded://game/fonts/NotoSansJP-Bold.ttf";
+
+// 日本語フォントのリソースを定義
+#[derive(Resource)]
+pub struct JpFont(pub Handle&lt;Font&gt;);
+
+pub struct FontsPlugin;
+
+impl Plugin for FontsPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        // 埋め込みフォントを追加
+        bevy::asset::embedded_asset!(app, "NotoSansJP-Bold.ttf");
+        app.add_systems(Startup, setup_fonts);
+    }
+}
+
+// 日本語フォントをロードしてリソースとして登録するシステム
+fn setup_fonts(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
+    // フォントをロード
+    let jp_font_handle = asset_server.load(FONT_PATH);
+    // フォントをリソースとして登録
+    commands.insert_resource(JpFont(jp_font_handle));
+}
+<span class="boring">}</span></code></pre>
+<p>UIを作成します。<code>src/ending/ui.rs</code>というファイルを作成し、ゲーム終了時のUIを表示するシステムを追加します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use crate::{ending::EndingMessage, state::GameState};
+use bevy::prelude::*;
+
+// リスタートボタンのコンポーネント
+#[derive(Component)]
+pub struct RestartButton;
+
+// ゲーム終了時のUIを表示するプラグイン
+pub struct EndingUiPlugin;
+
+impl Plugin for EndingUiPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        app.add_systems(
+            Update,
+            restart_button_system.in_set(crate::game_play_set::GamePlaySet::Input),
+        )
+        .add_systems(OnEnter(GameState::Ending), spawn_ending_ui);
+    }
+}
+
+// リスタートボタンが押されたときにゲーム状態をPlayingに変更するシステム
+fn restart_button_system(
+    mut button_query: Query&lt;
+        (&amp;Interaction, &amp;mut BackgroundColor),
+        (With&lt;RestartButton&gt;, Changed&lt;Interaction&gt;),
+    &gt;,
+    mut state: ResMut&lt;NextState&lt;GameState&gt;&gt;,
+    mut ending_state: ResMut&lt;super::EndingState&gt;,
+) {
+    for (interaction, mut color) in &amp;mut button_query {
+        // ボタンの状態に応じて色を変更する
+        match *interaction {
+            Interaction::Pressed =&gt; {
+                color.0 = Color::srgb(0.35, 0.75, 0.35);
+                println!("Restart button clicked!");
+                state.set(GameState::Playing);
+                ending_state.message = None;
+            }
+            Interaction::Hovered =&gt; {
+                color.0 = Color::srgb(0.25, 0.25, 0.25);
+            }
+            Interaction::None =&gt; {
+                color.0 = Color::srgb(0.15, 0.15, 0.15);
+            }
+        }
+    }
+}
+
+// ゲーム終了時のUIを生成するシステム
+pub fn spawn_ending_ui(
+    mut commands: Commands,
+    jp_font: Res&lt;crate::fonts::JpFont&gt;,
+    ending_state: Res&lt;super::EndingState&gt;,
+) {
+    let ending = match ending_state.message {
+        Some(message) =&gt; message,
+        None =&gt; {
+            println!("No ending message found, defaulting to GameOver");
+            EndingMessage::GameOver
+        }
+    };
+    let canvas = commands
+        .spawn((
+            Node {
+                width: percent(100.0),
+                height: percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Column,
+                ..default()
+            },
+            BackgroundColor(ending.background_color()),
+            DespawnOnExit(GameState::Ending),
+        ))
+        .id();
+    let text = commands
+        .spawn((
+            Node {
+                max_width: percent(100.0),
+                ..default()
+            },
+            Text::new(ending.text()),
+            TextFont {
+                font: jp_font.0.clone(),
+                font_size: 50.0,
+                ..default()
+            },
+            TextLayout::new_with_justify(Justify::Center),
+            TextColor(Color::WHITE),
+        ))
+        .id();
+    let restart_button = commands
+        .spawn((
+            Button,
+            RestartButton,
+            Node {
+                width: px(200.0),
+                height: px(50.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            BackgroundColor(Color::default()),
+            children![
+                Node {
+                    max_width: percent(100.0),
+                    ..default()
+                },
+                Text::new("Restart"),
+                TextFont {
+                    font: jp_font.0.clone(),
+                    font_size: 30.0,
+                    ..default()
+                },
+                TextLayout::new_with_justify(Justify::Center),
+                TextColor(Color::WHITE),
+            ],
+        ))
+        .id();
+    // canvasの子としてtextとrestart_buttonを追加
+    commands
+        .entity(canvas)
+        .add_children(&amp;[text, restart_button]);
+}
+<span class="boring">}</span></code></pre>
+<p>作ったプラグインを追加していきます。<code>src/ending/mod.rs</code>に以下のコードを追加します。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>mod ui;
+<span class="boring">}</span></code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl Plugin for EndingPlugin {
+    fn build(&amp;self, app: &amp;mut App) {
+        app.add_message::&lt;EndingMessage&gt;()
+            .insert_resource(EndingState::default())
+            .add_plugins(ui::EndingUiPlugin) // UIプラグインを追加
+            .add_systems(
+                Update,
+                handle_ending_message.in_set(crate::game_play_set::GamePlaySet::Detection),
+            );
+    }
+}
+<span class="boring">}</span></code></pre>
+<p><code>src/main.rs</code>に作ったプラグインを追加します。<code>add_plugins(fonts::FontsPlugin)</code>と<code>add_plugins(ending::EndingPlugin)</code>を<code>app</code>に追加してください。<br></p>
+<p><code>src/player/collision.rs</code>の<code>check_collisions</code>システムを書き換えて、プレイヤーがゴールに触れたときにゲームクリアのメッセージを送信するようにします。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// プレイヤーとゴール、敵との衝突を検出するシステム
+fn check_collisions(
+    players: Query&lt;Entity, With&lt;Player&gt;&gt;,
+    goals: Query&lt;Entity, With&lt;Goal&gt;&gt;,
+    mut collision_events: MessageReader&lt;CollisionEvent&gt;,
+    mut ending_message: MessageWriter&lt;EndingMessage&gt;, // ゲーム終了メッセージを送信するためのMessageWriter
+) {
+    for event in collision_events.read() {
+        // 衝突イベントが開始された場合のみ処理する
+        let CollisionEvent::Started(first, second, _) = event else {
+            continue;
+        };
+
+        // 衝突したエンティティのうち、プレイヤーに該当するエンティティを取得する
+        let Some(player_entity) = find_entity(*first, *second, &amp;players) else {
+            continue;
+        };
+
+        // 衝突したエンティティのうち、ゴールまたは敵に該当するエンティティを取得する
+        if let Some(goal_entity) = find_entity(*first, *second, &amp;goals) {
+            println!(
+                "Player {:?} collided with Goal {:?}",
+                player_entity, goal_entity
+            );
+            // ゲームクリアのメッセージを送信する
+            ending_message.write(EndingMessage::Clear);
+        }
+    }
+}
+<span class="boring">}</span></code></pre>
 
                     </main>
 
