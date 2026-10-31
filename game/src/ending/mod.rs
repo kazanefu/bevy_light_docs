@@ -41,8 +41,7 @@ impl Plugin for EndingPlugin {
             .add_systems(
                 Update,
                 handle_ending_message.in_set(crate::game_play_set::GamePlaySet::Detection),
-            )
-            .add_systems(OnEnter(GameState::Ending), ui::spawn_ending_ui);
+            );
     }
 }
 

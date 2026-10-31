@@ -11,6 +11,8 @@ pub struct FontsPlugin;
 
 impl Plugin for FontsPlugin {
     fn build(&self, app: &mut App) {
+        // 埋め込みフォントを追加
+        bevy::asset::embedded_asset!(app, "NotoSansJP-Bold.ttf");
         app.add_systems(Startup, setup_fonts);
     }
 }

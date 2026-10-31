@@ -8,13 +8,20 @@ pub struct EndingUiPlugin;
 
 impl Plugin for EndingUiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, restart_button_system);
+        app.add_systems(
+            Update,
+            restart_button_system.in_set(crate::game_play_set::GamePlaySet::Input),
+        )
+        .add_systems(OnEnter(GameState::Ending), spawn_ending_ui);
     }
 }
 
 // リスタートボタンが押されたときにゲーム状態をPlayingに変更するシステム
 fn restart_button_system(
-    mut button_query: Query<(&Interaction, &mut BackgroundColor), With<RestartButton>>,
+    mut button_query: Query<
+        (&Interaction, &mut BackgroundColor),
+        (With<RestartButton>, Changed<Interaction>),
+    >,
     mut state: ResMut<NextState<GameState>>,
     mut ending_state: ResMut<super::EndingState>,
 ) {

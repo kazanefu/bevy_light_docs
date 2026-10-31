@@ -42,8 +42,6 @@ fn main() {
     }));
     // 設定をリソースとしてアプリに挿入
     app.insert_resource(settings);
-    // 埋め込みフォントを追加
-    bevy::asset::embedded_asset!(app, "fonts/NotoSansJP-Bold.ttf");
 
     app.init_state::<state::GameState>()
         .add_plugins(textures::TexturePlugin)
