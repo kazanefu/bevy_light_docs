@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-c63ee9a5.js";
+            window.path_to_searchindex_js = "searchindex-a6f45d67.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a2832684.js"></script>
@@ -1062,7 +1062,7 @@ fn handle_ending_message(
 
 <span class="boring">}</span></code></pre>
 <p>これで、ゲーム終了時に送信されるメッセージを処理し、ゲーム状態を<code>Ending</code>に変更するシステムが完成しました。<br></p>
-<p>UIで使うためのフォントを読み込んでリソースに追加するシステムを作ります。<code>src/fonts/mod.rs</code>というファイルを作成し、以下のコードを追加します。</p>
+<p>UIで使うためのフォントを読み込んでリソースに追加するシステムを作ります。<code>src/fonts/mod.rs</code>というファイルを作成し、以下のコードを追加します。また、フォントファイルを<code>src/fonts/NotoSansJP-Bold.ttf</code>に配置します。(ここではNoto Sans JPのBoldフォントを使用していますが、別のフォントでも構いません。)</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bevy::prelude::*;
