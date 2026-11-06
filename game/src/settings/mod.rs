@@ -48,7 +48,7 @@ pub fn get_settings() -> Settings {
     match load_settings() {
         Ok(settings) => settings,
         Err(err) => {
-            eprintln!("Failed to load settings: {err}");
+            error!(target: "game", "Failed to load settings: {err}");
             Settings::default()
         }
     }

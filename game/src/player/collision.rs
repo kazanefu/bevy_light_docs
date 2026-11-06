@@ -46,14 +46,16 @@ fn check_collisions(
 
         // 衝突したエンティティのうち、ゴールまたは敵に該当するエンティティを取得する
         if let Some(goal_entity) = find_entity(*first, *second, &goals) {
-            println!(
+            debug!(
+                target: "game",
                 "Player {:?} collided with Goal {:?}",
                 player_entity, goal_entity
             );
             // ゲームクリアのメッセージを送信する
             ending_message.write(EndingMessage::Clear);
         } else if let Some(enemy_entity) = find_entity(*first, *second, &enemies) {
-            println!(
+            debug!(
+                target: "game",
                 "Player {:?} collided with Enemy {:?}",
                 player_entity, enemy_entity
             );

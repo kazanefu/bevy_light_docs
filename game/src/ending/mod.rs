@@ -52,7 +52,7 @@ fn handle_ending_message(
     mut ending_state: ResMut<EndingState>,
 ) {
     for message in ending_message.read() {
-        println!("Ending message received: {:?}", message);
+        debug!(target: "game", "Ending message received: {:?}", message);
         // ゲーム終了状態を更新し、ゲーム状態をEndingに設定する
         ending_state.message = Some(*message);
         // GameStateをEndingに変更する

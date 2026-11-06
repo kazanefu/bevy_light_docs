@@ -29,7 +29,7 @@ fn restart_button_system(
         match *interaction {
             Interaction::Pressed => {
                 color.0 = Color::srgb(0.35, 0.75, 0.35);
-                println!("Restart button clicked!");
+                debug!(target: "game", "Restart button clicked!");
                 state.set(GameState::Playing);
                 ending_state.message = None;
             }
@@ -52,7 +52,7 @@ pub fn spawn_ending_ui(
     let ending = match ending_state.message {
         Some(message) => message,
         None => {
-            println!("No ending message found, defaulting to GameOver");
+            debug!(target: "game", "No ending message found, defaulting to GameOver");
             EndingMessage::GameOver
         }
     };
