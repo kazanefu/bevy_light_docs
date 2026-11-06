@@ -101,7 +101,7 @@ fn setup(
 }
 ```
 
-次にプレイヤーがゴールに触れたときの処理を追加します。`src/player/collision.rs`というファイルを作ってそこに以下のコードを書きます。
+次にプレイヤーがゴールに触れたときの処理を追加します。`src/player/collision.rs`というファイルを作ってそこに以下のコードを書きます。今はとりあえずコンソールに衝突したことを表示するだけにします。
 ```rust
 use super::*;
 use crate::goal::Goal;
@@ -149,7 +149,8 @@ fn check_collisions(
 
         // 衝突したエンティティのうち、ゴールまたは敵に該当するエンティティを取得する
         if let Some(goal_entity) = find_entity(*first, *second, &goals) {
-            println!(
+            debug!(
+                target: "game",
                 "Player {:?} collided with Goal {:?}",
                 player_entity, goal_entity
             );
@@ -159,5 +160,4 @@ fn check_collisions(
 ```
 `PlayerCollisionPlugin`を`PlayerPlugin`に追加します。<br>
 
-これでプレイヤーが家に触れた瞬間にコンソールに`Player プレイヤーのid collided with Goal 家のid`のように表示されるようになったと思います。
-
+これでプレイヤーが家に触れた瞬間にコンソールに`Player プレイヤーのid collided with Goal 家のid`のように表示されるようになったと思います。(デバッグのログを出したいときは`$env:RUST_LOG = "info,game=debug"`のようにして、`game`ターゲットのログレベルを`debug`にする必要があります。)

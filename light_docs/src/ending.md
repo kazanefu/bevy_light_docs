@@ -1,6 +1,6 @@
 # クリア画面を作る
 
-まず、`src/ending/mod.rs`というファイルを作成し、ゲーム終了時に送信するメッセージの定義と、そのメッセージを処理するシステムを作ります。
+まず、`src/ending/mod.rs`というファイルを作成し、ゲーム終了時に送信するメッセージの定義と、そのメッセージを処理するシステムを作ります。`EndingMessage`という列挙型を作り、ゲームクリアとゲームオーバーの2種類のメッセージを定義します。<br>`EndingState`というリソースを作り、ゲーム終了時の状態を保持します。`EndingMessage`には、リザルト画面での背景色とテキストを返すメソッドを実装します。<br>`handle_ending_message`システムは、ゲーム終了時に送信されるメッセージを処理し、ゲーム状態を`Ending`に変更するシステムです。
 ```rust
 use bevy::prelude::*;
 use crate::state::GameState;
@@ -54,7 +54,7 @@ fn handle_ending_message(
     mut ending_state: ResMut<EndingState>,
 ) {
     for message in ending_message.read() {
-        println!("Ending message received: {:?}", message);
+        debug!(target: "game", "Ending message received: {:?}", message);
         // ゲーム終了状態を更新し、ゲーム状態をEndingに設定する
         ending_state.message = Some(*message);
         // GameStateをEndingに変更する
@@ -96,7 +96,7 @@ fn setup_fonts(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 ```
 
-UIを作成します。`src/ending/ui.rs`というファイルを作成し、ゲーム終了時のUIを表示するシステムを追加します。
+UIを作成します。`src/ending/ui.rs`というファイルを作成し、ゲーム終了時のUIを表示するシステムを追加します。`restart_button_system`システムでリスタートボタンを押すと、ゲーム状態を`Playing`に戻し、ゲームをリスタートできるようにします。
 ```rust
 use crate::{ending::EndingMessage, state::GameState};
 use bevy::prelude::*;
@@ -132,7 +132,7 @@ fn restart_button_system(
         match *interaction {
             Interaction::Pressed => {
                 color.0 = Color::srgb(0.35, 0.75, 0.35);
-                println!("Restart button clicked!");
+                debug!(target: "game", "Restart button clicked!");
                 state.set(GameState::Playing);
                 ending_state.message = None;
             }
@@ -155,7 +155,7 @@ pub fn spawn_ending_ui(
     let ending = match ending_state.message {
         Some(message) => message,
         None => {
-            println!("No ending message found, defaulting to GameOver");
+            debug!(target: "game", "No ending message found, defaulting to GameOver");
             EndingMessage::GameOver
         }
     };
@@ -266,7 +266,8 @@ fn check_collisions(
 
         // 衝突したエンティティのうち、ゴールまたは敵に該当するエンティティを取得する
         if let Some(goal_entity) = find_entity(*first, *second, &goals) {
-            println!(
+            debug!(
+                target: "game",
                 "Player {:?} collided with Goal {:?}",
                 player_entity, goal_entity
             );

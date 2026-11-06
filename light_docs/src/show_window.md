@@ -2,7 +2,7 @@
 
 現在の状態で`cargo run`でビルド&実行しても標準出力(ターミナル)に`Hello, world!`と表示されるだけで、ゲーム画面は表示されません。<br>
 ゲーム画面を表示するためには、Bevyの`App`に`DefaultPlugins`を追加する必要があります。<br>
-`src/main.rs`を開き、以下のように書き換えます。
+`src/main.rs`を開き、以下のように書き換えます。`src/main.rs`はプログラムのエントリーポイントである`main`関数が書かれるファイルです<br>
 ```rust
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // リリースビルドではコンソールを非表示にする
 use bevy::prelude::*; // Bevyの基本機能一式(Unityでのusing UnityEngine;に相当する)
@@ -22,7 +22,7 @@ fn main() {
 
 ## ウィンドウのサイズ等についての設定ファイルを作成する
 
-まず、プロジェクトディレクトリ直下に`settings/settings.toml`というファイルを作成します。<br>
+まず、プロジェクトディレクトリ直下に`settings/settings.toml`というファイルを作成します。ここにウィンドウのサイズやタイトル、フルスクリーンモード、VSyncの有効/無効などの設定を記述します。<br>
 中は以下のような形式で書きます
 ```toml
 [window]
@@ -134,7 +134,7 @@ pub fn get_settings() -> Settings {
     match load_settings() {
         Ok(settings) => settings,
         Err(err) => {
-            eprintln!("Failed to load settings: {err}");
+            error!(target: "game", "Failed to load settings: {err}");
             Settings::default()
         }
     }

@@ -1,6 +1,6 @@
 # プレイヤーの移動と表示
 
-まず、Updateの実行順序を制御するために、`src/game_play_set.rs`というファイルを作成し、以下のコードを追加します。
+まず、Updateの実行順序を制御するために、`src/game_play_set.rs`というファイルを作成し、以下のコードを追加します。システムセットを使うことで、プレイヤーの入力、検出、移動、描画の順番を制御することができます。
 
 ```rust
 use bevy::prelude::*;
@@ -32,7 +32,8 @@ impl Plugin for GamePlaySetPlugin {
 }
 ```
 
-そしたら、`src/player/mod.rs`というファイルを作成し、PlayerについてのものをまとめるプラグインとPlayerコンポーネントとPlayerをスポーンするための関数を作成します。
+そしたら、`src/player/mod.rs`というファイルを作成し、PlayerについてのものをまとめるプラグインとPlayerコンポーネントとPlayerをスポーンするための関数を作成します。`mod.rs`は`main.rs`同様に名前が固定のファイルで、そのディレクトリのモジュールを定義するファイルです。<br>
+`Player`コンポーネントは、プレイヤーの移動スピードを保持するためのコンポーネントです。
 
 ```rust
 use bevy::prelude::*;
@@ -96,11 +97,28 @@ impl Player {
     }
 }
 ```
+PlayerPluginのbuildメソッド内にはあとで、プレイヤーの入力を処理するシステムや、プレイヤーの移動を制御するシステムを追加していきます。Pluginを使うことで、Playerに関する処理をまとめて管理することができます。<br>
+`Player::spawn`関数は、プレイヤーをスポーンするための関数です。`Commands`を使ってエンティティを生成し、Playerに必要なコンポーネントを追加しています。
 
-次にプレイヤーの入力を処理するシステムを作成します。`src/player/input.rs`というファイルを作成し、以下のコードを追加します。
+次にプレイヤーの入力を処理するシステムを作成します。`src/player/input.rs`というファイルを作成し、以下のコードを追加します。ここにはキー入力をVec2で表すリソースと、入力に応じてその値を更新するシステムを作成します。また、キーの組み合わせを表す構造体も作成します。<br>
+`MoveDirection`というリソースを作成し、矢印キーやWASDキーの入力に応じて、x軸とy軸の方向をVec2で表します。リソースはBevyの仕組みで、システム間で共有されるデータを保持するためのものです。世界に1つだけ存在するグローバルなデータとして扱われます。<br>
+`set_move_direction`システムは、入力に応じてMoveDirectionを更新するシステムです。`add_systems`で`Update`で登録しているので、毎フレーム呼ばれます。引数に`Res<ButtonInput<KeyCode>>`を受け取ることで、現在押されているキーの情報を取得できます。システムからリソースにアクセスするには、`Res`や`ResMut`を使います。`Res`は読み取り専用、`ResMut`は書き込み可能なリソースを取得するためのものです。ここでは`ButtonInput<KeyCode>`と`KeyConfig`を読み取り専用で取得し、`MoveDirection`を更新するために書き込み可能で取得しています。<br>
+`KeyBinding`構造体は、複数のキーの組み合わせを表すための構造体です。最大4つのキーを保持できるようにしています。`pressed`メソッドは、今のフレームで押されているかどうかを判定するためのメソッドです。<br>
+`KeyConfig`構造体は、プレイヤーの移動に使用するキー設定を保持するためのリソースです。デフォルトでは、WASDキーと矢印キーの組み合わせを設定しています。<br>
 
 ```rust
+use crate::game_play_set::GamePlaySet;
 use bevy::prelude::*;
+
+pub struct PlayerInputPlugin;
+
+impl Plugin for PlayerInputPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(MoveDirection::default())
+            .insert_resource(KeyConfig::default())
+            .add_systems(Update, set_move_direction.in_set(GamePlaySet::Input));
+    }
+}
 
 // 入力情報を2次元ベクトルで表すリソース
 #[derive(Resource, Debug, Clone, Copy, Default)]
@@ -170,15 +188,18 @@ impl Default for KeyConfig {
 }
 ```
 
-そしたら、この入力情報を使ってプレイヤーを動かすシステムを作成します。`src/player/control.rs`というファイルを作成し、以下のコードを追加します。
+そしたら、この入力情報を使ってプレイヤーを動かすシステムを作成します。`src/player/control.rs`というファイルを作成し、以下のコードを追加します。ここではRapierという物理エンジンを使ってプレイヤーの速度を直接設定することで、プレイヤーを動かします。<br>
+`move_player`システムは、`MoveDirection`リソースを使ってプレイヤーの速度を設定するシステムです。`Query<(&mut Velocity, &Player)>`を使って、プレイヤーのVelocityコンポーネントとPlayerコンポーネントを取得し、速度を更新します。<br>
 
 ```rust
 use super::*;
 pub struct PlayerControlPlugin;
 
+// プレイヤーの移動を制御するプラグイン
 impl Plugin for PlayerControlPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
+            // プレイヤーの移動を制御するシステムをFixedUpdateに追加
             FixedUpdate,
             move_player.in_set(crate::game_play_set::GamePlaySet::Movement),
         );
@@ -205,18 +226,14 @@ mod input;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            input::set_move_direction.in_set(crate::game_play_set::GamePlaySet::Input),
-        )
-        .init_resource::<input::MoveDirection>()
-        .init_resource::<input::KeyConfig>()
-        .add_plugins(control::PlayerControlPlugin);
+        app.add_plugins(input::PlayerInputPlugin)
+            .add_plugins(control::PlayerControlPlugin)
+            .add_plugins(collision::PlayerCollisionPlugin);
     }
 }
 ```
 
-これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。`src/textures/mod.rs`というファイルを作成し、また、``src/textures/player.png``という画像を用意します。`src/textures/mod.rs`には以下のコードを追加します。
+これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。`src/textures/mod.rs`というファイルを作成し、また、`src/textures/player.png`という画像を用意します。`src/textures/mod.rs`には以下のコードを追加します。`TextureHandles`というリソースを作成し、そこにプレイヤーのテクスチャを保持します。毎回``asset_server.load``でテクスチャを読み込むのは非効率なので、最初に読み込んでリソースとして保持しておきます。
 
 ```rust
 use bevy::prelude::*;
@@ -246,7 +263,7 @@ fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 ```
 
-ではいよいよPlayerをゲーム上にスポーンさせます。Playerは`GameState`が`Playing`になったときにスポーンさせます。`src/playing.rs`というファイルを作成し、以下のコードを追加します。
+ではいよいよPlayerをゲーム上にスポーンさせます。Playerは`GameState`が`Playing`になったときにスポーンさせます。`src/playing.rs`というファイルを作成し、以下のコードを追加します。`setup`システムは、`GameState`が`Playing`になったときに呼ばれ、ワールドにプレイヤーやカメラをスポーンします。
 ```rust
 use crate::{player::Player, state::GameState};
 use bevy::prelude::*;
@@ -267,6 +284,7 @@ fn setup(
     textures: Option<Res<crate::textures::TextureHandles>>,
     cameras: Query<Entity, With<Camera2d>>,
 ) {
+    // テクスチャがリソースとして存在する場合はそれを使い、存在しない場合はアセットサーバーからロードする
     let player_texture = match textures {
         Some(textures) => (
             textures.player_texture.clone(),
@@ -282,9 +300,11 @@ fn setup(
     let player = Player::spawn(&mut commands, Vec3::new(-300.0, 0.0, 0.0), player_texture);
     commands
         .entity(player)
-        .insert(DespawnOnExit(GameState::Playing));
+        .insert(DespawnOnExit(GameState::Playing)); // ゲームプレイ状態を抜けるときにプレイヤーを削除するためのコンポーネントを追加
 }
 ```
+
+`Commands`はゲームの世界(World)に対する変更を予約しておくための仕組みです。
 
 あとは、`src/main.rs`に作ったプラグインとRapierPhysicsPluginを追加して、ゲームを実行してみましょう。(各モジュールを`mod`で宣言するのを忘れないようにしてください。また、bevy_rapier2d::prelude::*をuseするのも忘れないようにしてください。)
 
