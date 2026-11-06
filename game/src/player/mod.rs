@@ -9,14 +9,9 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            input::set_move_direction.in_set(crate::game_play_set::GamePlaySet::Input),
-        )
-        .init_resource::<input::MoveDirection>()
-        .init_resource::<input::KeyConfig>()
-        .add_plugins(control::PlayerControlPlugin)
-        .add_plugins(collision::PlayerCollisionPlugin);
+        app.add_plugins(input::PlayerInputPlugin)
+            .add_plugins(control::PlayerControlPlugin)
+            .add_plugins(collision::PlayerCollisionPlugin);
     }
 }
 

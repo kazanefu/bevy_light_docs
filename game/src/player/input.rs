@@ -1,4 +1,15 @@
+use crate::game_play_set::GamePlaySet;
 use bevy::prelude::*;
+
+pub struct PlayerInputPlugin;
+
+impl Plugin for PlayerInputPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(MoveDirection::default())
+            .insert_resource(KeyConfig::default())
+            .add_systems(Update, set_move_direction.in_set(GamePlaySet::Input));
+    }
+}
 
 // 入力情報を2次元ベクトルで表すリソース
 #[derive(Resource, Debug, Clone, Copy, Default)]
