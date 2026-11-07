@@ -17,6 +17,6 @@ pub fn move_player(
 ) {
     for (mut velocity, player) in &mut query {
         // プレイヤーの速度を設定
-        velocity.linvel = move_direction.0 * player.speed;
+        velocity.linear = move_direction.0 * player.speed;
     }
 }

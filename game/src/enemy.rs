@@ -60,14 +60,14 @@ impl Plugin for EnemyPlugin {
 // 敵の移動を制御するシステム
 fn move_enemy(mut enemy_que: Query<(&mut Velocity, &Enemy, &Transform)>) {
     for (mut velocity, enemy, transform) in &mut enemy_que {
-        if velocity.linvel.x == 0.0 {
-            velocity.linvel.x = enemy.speed;
+        if velocity.linear.x == 0.0 {
+            velocity.linear.x = enemy.speed;
         }
         let x = transform.translation.x;
         if x < enemy.x_range.start {
-            velocity.linvel.x = enemy.speed;
+            velocity.linear.x = enemy.speed;
         } else if x > enemy.x_range.end {
-            velocity.linvel.x = -enemy.speed;
+            velocity.linear.x = -enemy.speed;
         }
     }
 }

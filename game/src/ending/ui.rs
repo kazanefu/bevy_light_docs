@@ -1,5 +1,8 @@
 use crate::{ending::EndingMessage, state::GameState};
 use bevy::prelude::*;
+use bevy::picking::hover::Hovered;
+use bevy::ui::Pressed;
+use bevy::ui_widgets::Button;
 
 #[derive(Component)]
 pub struct RestartButton;
@@ -18,27 +21,20 @@ impl Plugin for EndingUiPlugin {
 
 // リスタートボタンが押されたときにゲーム状態をPlayingに変更するシステム
 fn restart_button_system(
-    mut button_query: Query<
-        (&Interaction, &mut BackgroundColor),
-        (With<RestartButton>, Changed<Interaction>),
-    >,
+    mut button_query: Query<(&Hovered, Has<Pressed>, &mut BackgroundColor), With<RestartButton>>,
     mut state: ResMut<NextState<GameState>>,
     mut ending_state: ResMut<super::EndingState>,
 ) {
-    for (interaction, mut color) in &mut button_query {
-        match *interaction {
-            Interaction::Pressed => {
-                color.0 = Color::srgb(0.35, 0.75, 0.35);
-                debug!(target: "game", "Restart button clicked!");
-                state.set(GameState::Playing);
-                ending_state.message = None;
-            }
-            Interaction::Hovered => {
-                color.0 = Color::srgb(0.25, 0.25, 0.25);
-            }
-            Interaction::None => {
-                color.0 = Color::srgb(0.15, 0.15, 0.15);
-            }
+    for (hovered, pressed, mut color) in &mut button_query {
+        if pressed {
+            color.0 = Color::srgb(0.35, 0.75, 0.35);
+            debug!(target: "game", "Restart button clicked!");
+            state.set(GameState::Playing);
+            ending_state.message = None;
+        } else if hovered.get() {
+            color.0 = Color::srgb(0.25, 0.25, 0.25);
+        } else {
+            color.0 = Color::srgb(0.15, 0.15, 0.15);
         }
     }
 }
@@ -78,17 +74,18 @@ pub fn spawn_ending_ui(
             },
             Text::new(ending.text()),
             TextFont {
-                font: jp_font.0.clone(),
-                font_size: 50.0,
+                font: jp_font.0.clone().into(),
+                font_size: FontSize::Px(50.0),
                 ..default()
             },
-            TextLayout::new_with_justify(Justify::Center),
+            TextLayout::justify(Justify::Center),
             TextColor(Color::WHITE),
         ))
         .id();
     let restart_button = commands
         .spawn((
             Button,
+            Hovered::default(),
             RestartButton,
             Node {
                 width: px(200.0),
@@ -105,11 +102,11 @@ pub fn spawn_ending_ui(
                 },
                 Text::new("Restart"),
                 TextFont {
-                    font: jp_font.0.clone(),
-                    font_size: 30.0,
+                    font: jp_font.0.clone().into(),
+                    font_size: FontSize::Px(30.0),
                     ..default()
                 },
-                TextLayout::new_with_justify(Justify::Center),
+                TextLayout::justify(Justify::Center),
                 TextColor(Color::WHITE),
             ],
         ))
