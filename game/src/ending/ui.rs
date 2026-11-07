@@ -2,7 +2,7 @@ use crate::{ending::EndingMessage, state::GameState};
 use bevy::prelude::*;
 use bevy::picking::hover::Hovered;
 use bevy::ui::Pressed;
-use bevy::ui_widgets::Button;
+use bevy::ui_widgets::{Activate, Button};
 
 #[derive(Component)]
 pub struct RestartButton;
@@ -13,30 +13,34 @@ impl Plugin for EndingUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            restart_button_system.in_set(crate::game_play_set::GamePlaySet::Input),
+            update_restart_button.in_set(crate::game_play_set::GamePlaySet::Input),
         )
         .add_systems(OnEnter(GameState::Ending), spawn_ending_ui);
     }
 }
 
-// リスタートボタンが押されたときにゲーム状態をPlayingに変更するシステム
-fn restart_button_system(
+fn update_restart_button(
     mut button_query: Query<(&Hovered, Has<Pressed>, &mut BackgroundColor), With<RestartButton>>,
+) {
+    for (hovered, pressed, mut color) in &mut button_query {
+        color.0 = if pressed {
+            Color::srgb(0.35, 0.75, 0.35)
+        } else if hovered.get() {
+            Color::srgb(0.25, 0.25, 0.25)
+        } else {
+            Color::srgb(0.15, 0.15, 0.15)
+        };
+    }
+}
+
+fn restart_button(
+    _activate: On<Activate>,
     mut state: ResMut<NextState<GameState>>,
     mut ending_state: ResMut<super::EndingState>,
 ) {
-    for (hovered, pressed, mut color) in &mut button_query {
-        if pressed {
-            color.0 = Color::srgb(0.35, 0.75, 0.35);
-            debug!(target: "game", "Restart button clicked!");
-            state.set(GameState::Playing);
-            ending_state.message = None;
-        } else if hovered.get() {
-            color.0 = Color::srgb(0.25, 0.25, 0.25);
-        } else {
-            color.0 = Color::srgb(0.15, 0.15, 0.15);
-        }
-    }
+    debug!(target: "game", "Restart button clicked!");
+    state.set(GameState::Playing);
+    ending_state.message = None;
 }
 
 // ゲーム終了時のUIを生成するシステム
@@ -110,6 +114,7 @@ pub fn spawn_ending_ui(
                 TextColor(Color::WHITE),
             ],
         ))
+        .observe(restart_button)
         .id();
     commands
         .entity(canvas)
