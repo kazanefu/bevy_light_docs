@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-a6f45d67.js";
+            window.path_to_searchindex_js = "searchindex-8ebde7c3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-a2832684.js"></script>
+        <script src="toc-f8c31075.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -272,7 +272,7 @@ fn load_textures(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
         .insert(DespawnOnExit(GameState::Playing));
 }
 <span class="boring">}</span></code></pre>
-<p>次にプレイヤーがゴールに触れたときの処理を追加します。<code>src/player/collision.rs</code>というファイルを作ってそこに以下のコードを書きます。</p>
+<p>次にプレイヤーがゴールに触れたときの処理を追加します。<code>src/player/collision.rs</code>というファイルを作ってそこに以下のコードを書きます。今はとりあえずコンソールに衝突したことを表示するだけにします。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use super::*;
@@ -321,7 +321,8 @@ fn check_collisions(
 
         // 衝突したエンティティのうち、ゴールまたは敵に該当するエンティティを取得する
         if let Some(goal_entity) = find_entity(*first, *second, &amp;goals) {
-            println!(
+            debug!(
+                target: "game",
                 "Player {:?} collided with Goal {:?}",
                 player_entity, goal_entity
             );
@@ -330,7 +331,7 @@ fn check_collisions(
 }
 <span class="boring">}</span></code></pre>
 <p><code>PlayerCollisionPlugin</code>を<code>PlayerPlugin</code>に追加します。<br></p>
-<p>これでプレイヤーが家に触れた瞬間にコンソールに<code>Player プレイヤーのid collided with Goal 家のid</code>のように表示されるようになったと思います。</p>
+<p>これでプレイヤーが家に触れた瞬間にコンソールに<code>Player プレイヤーのid collided with Goal 家のid</code>のように表示されるようになったと思います。(デバッグのログを出したいときは<code>$env:RUST_LOG = "info,game=debug"</code>のようにして、<code>game</code>ターゲットのログレベルを<code>debug</code>にする必要があります。)</p>
 
                     </main>
 

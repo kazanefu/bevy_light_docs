@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-a6f45d67.js";
+            window.path_to_searchindex_js = "searchindex-8ebde7c3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-a2832684.js"></script>
+        <script src="toc-f8c31075.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,7 +175,7 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="ゲーム全体の状態をstateで管理する"><a class="header" href="#ゲーム全体の状態をstateで管理する">ゲーム全体の状態をStateで管理する</a></h1>
-<p>今回作るゲームでは大きく分けて、ゲームプレイ中, 終了(クリア or ゲームオーバー)の2つの状態が存在します。<code>src/state.rs</code>というファイルを作って以下のようにゲームの状態の定義をします。</p>
+<p>今回作るゲームでは大きく分けて、ゲームプレイ中, 終了(クリア or ゲームオーバー)の2つの状態が存在します。<code>src/state.rs</code>というファイルを作って以下のようにゲームの状態の定義をします。BevyのStateを使うことで、ゲームの状態を簡単に管理することができます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bevy::prelude::*;

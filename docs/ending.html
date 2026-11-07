@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-a6f45d67.js";
+            window.path_to_searchindex_js = "searchindex-8ebde7c3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-a2832684.js"></script>
+        <script src="toc-f8c31075.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,7 +175,7 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="クリア画面を作る"><a class="header" href="#クリア画面を作る">クリア画面を作る</a></h1>
-<p>まず、<code>src/ending/mod.rs</code>というファイルを作成し、ゲーム終了時に送信するメッセージの定義と、そのメッセージを処理するシステムを作ります。</p>
+<p>まず、<code>src/ending/mod.rs</code>というファイルを作成し、ゲーム終了時に送信するメッセージの定義と、そのメッセージを処理するシステムを作ります。<code>EndingMessage</code>という列挙型を作り、ゲームクリアとゲームオーバーの2種類のメッセージを定義します。<br><code>EndingState</code>というリソースを作り、ゲーム終了時の状態を保持します。<code>EndingMessage</code>には、リザルト画面での背景色とテキストを返すメソッドを実装します。<br><code>handle_ending_message</code>システムは、ゲーム終了時に送信されるメッセージを処理し、ゲーム状態を<code>Ending</code>に変更するシステムです。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bevy::prelude::*;
@@ -230,7 +230,7 @@ fn handle_ending_message(
     mut ending_state: ResMut&lt;EndingState&gt;,
 ) {
     for message in ending_message.read() {
-        println!("Ending message received: {:?}", message);
+        debug!(target: "game", "Ending message received: {:?}", message);
         // ゲーム終了状態を更新し、ゲーム状態をEndingに設定する
         ending_state.message = Some(*message);
         // GameStateをEndingに変更する
@@ -270,7 +270,7 @@ fn setup_fonts(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
     commands.insert_resource(JpFont(jp_font_handle));
 }
 <span class="boring">}</span></code></pre>
-<p>UIを作成します。<code>src/ending/ui.rs</code>というファイルを作成し、ゲーム終了時のUIを表示するシステムを追加します。</p>
+<p>UIを作成します。<code>src/ending/ui.rs</code>というファイルを作成し、ゲーム終了時のUIを表示するシステムを追加します。<code>restart_button_system</code>システムでリスタートボタンを押すと、ゲーム状態を<code>Playing</code>に戻し、ゲームをリスタートできるようにします。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use crate::{ending::EndingMessage, state::GameState};
@@ -307,7 +307,7 @@ fn restart_button_system(
         match *interaction {
             Interaction::Pressed =&gt; {
                 color.0 = Color::srgb(0.35, 0.75, 0.35);
-                println!("Restart button clicked!");
+                debug!(target: "game", "Restart button clicked!");
                 state.set(GameState::Playing);
                 ending_state.message = None;
             }
@@ -330,7 +330,7 @@ pub fn spawn_ending_ui(
     let ending = match ending_state.message {
         Some(message) =&gt; message,
         None =&gt; {
-            println!("No ending message found, defaulting to GameOver");
+            debug!(target: "game", "No ending message found, defaulting to GameOver");
             EndingMessage::GameOver
         }
     };
@@ -441,7 +441,8 @@ fn check_collisions(
 
         // 衝突したエンティティのうち、ゴールまたは敵に該当するエンティティを取得する
         if let Some(goal_entity) = find_entity(*first, *second, &amp;goals) {
-            println!(
+            debug!(
+                target: "game",
                 "Player {:?} collided with Goal {:?}",
                 player_entity, goal_entity
             );
@@ -460,6 +461,9 @@ fn check_collisions(
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
+                            <a rel="next prefetch" href="let_us_create_enemies.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -471,6 +475,9 @@ fn check_collisions(
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
+                    <a rel="next prefetch" href="let_us_create_enemies.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
             </nav>
 
         </div>

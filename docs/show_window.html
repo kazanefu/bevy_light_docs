@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-a6f45d67.js";
+            window.path_to_searchindex_js = "searchindex-8ebde7c3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-a2832684.js"></script>
+        <script src="toc-f8c31075.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -177,7 +177,7 @@
                         <h1 id="ゲーム画面を表示する"><a class="header" href="#ゲーム画面を表示する">ゲーム画面を表示する</a></h1>
 <p>現在の状態で<code>cargo run</code>でビルド&amp;実行しても標準出力(ターミナル)に<code>Hello, world!</code>と表示されるだけで、ゲーム画面は表示されません。<br>
 ゲーム画面を表示するためには、Bevyの<code>App</code>に<code>DefaultPlugins</code>を追加する必要があります。<br>
-<code>src/main.rs</code>を開き、以下のように書き換えます。</p>
+<code>src/main.rs</code>を開き、以下のように書き換えます。<code>src/main.rs</code>はプログラムのエントリーポイントである<code>main</code>関数が書かれるファイルです<br></p>
 <pre class="playground"><code class="language-rust">#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // リリースビルドではコンソールを非表示にする
 use bevy::prelude::*; // Bevyの基本機能一式(Unityでのusing UnityEngine;に相当する)
 
@@ -191,7 +191,7 @@ fn main() {
 <p>これでゲームのウィンドウが立ち上がるようになりました。<br>
 このページのこれから先は、ウィンドウの大きさやフルスクリーンにするかなどの設定ファイルを作成して、それを読み込むことで、ゲームのウィンドウの設定を変更していきます。少しめんどくさいので、最初はこのままでも構いません。<br></p>
 <h2 id="ウィンドウのサイズ等についての設定ファイルを作成する"><a class="header" href="#ウィンドウのサイズ等についての設定ファイルを作成する">ウィンドウのサイズ等についての設定ファイルを作成する</a></h2>
-<p>まず、プロジェクトディレクトリ直下に<code>settings/settings.toml</code>というファイルを作成します。<br>
+<p>まず、プロジェクトディレクトリ直下に<code>settings/settings.toml</code>というファイルを作成します。ここにウィンドウのサイズやタイトル、フルスクリーンモード、VSyncの有効/無効などの設定を記述します。<br>
 中は以下のような形式で書きます</p>
 <pre><code class="language-toml">[window]
 width = 800
@@ -297,7 +297,7 @@ pub fn get_settings() -&gt; Settings {
     match load_settings() {
         Ok(settings) =&gt; settings,
         Err(err) =&gt; {
-            eprintln!("Failed to load settings: {err}");
+            error!(target: "game", "Failed to load settings: {err}");
             Settings::default()
         }
     }
