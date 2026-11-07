@@ -227,8 +227,7 @@ mod input;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(input::PlayerInputPlugin)
-            .add_plugins(control::PlayerControlPlugin)
-            .add_plugins(collision::PlayerCollisionPlugin);
+            .add_plugins(control::PlayerControlPlugin);
     }
 }
 ```
@@ -268,7 +267,6 @@ fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
 use crate::{player::Player, state::GameState};
 use bevy::prelude::*;
 
-
 pub struct PlayingPlugin;
 
 impl Plugin for PlayingPlugin {
@@ -286,12 +284,8 @@ fn setup(
 ) {
     // テクスチャがリソースとして存在する場合はそれを使い、存在しない場合はアセットサーバーからロードする
     let player_texture = match textures {
-        Some(textures) => (
-            textures.player_texture.clone(),
-        ),
-        None => (
-            asset_server.load("embedded://game/textures/player.png"),
-        ),
+        Some(textures) => textures.player_texture.clone(),
+        None => asset_server.load("embedded://game/textures/player.png"),
     };
     // カメラが存在しない場合は新しくカメラをスポーンする
     if cameras.is_empty() {
