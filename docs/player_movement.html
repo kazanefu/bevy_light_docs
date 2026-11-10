@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-275fbc7b.js";
+            window.path_to_searchindex_js = "searchindex-c054f0e9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f8c31075.js"></script>
@@ -385,7 +385,7 @@ pub fn move_player(
 ) {
     for (mut velocity, player) in &amp;mut query {
         // プレイヤーの速度を設定
-        velocity.linvel = move_direction.0 * player.speed;
+        velocity.linear = move_direction.0 * player.speed;
     }
 }
 <span class="boring">}</span></code></pre>
@@ -402,7 +402,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 <span class="boring">}</span></code></pre>
-<p>これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。<code>src/textures/mod.rs</code>というファイルを作成し、また、<code>src/textures/player.png</code>という画像を用意します。<code>src/textures/mod.rs</code>には以下のコードを追加します。<code>TextureHandles</code>というリソースを作成し、そこにプレイヤーのテクスチャを保持します。毎回<code>asset_server.load</code>でテクスチャを読み込むのは非効率なので、最初に読み込んでリソースとして保持しておきます。</p>
+<p>これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。<code>src/textures/mod.rs</code>というファイルを作成し、また、<code>src/textures/player.png</code>という画像を用意します。<code>src/textures/mod.rs</code>には以下のコードを追加します。<code>TextureHandles</code>というリソースを作成し、そこにプレイヤーのテクスチャを保持しておきます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bevy::prelude::*;
@@ -419,16 +419,11 @@ impl Plugin for TexturePlugin {
     fn build(&amp;self, app: &amp;mut App) {
         // 埋め込みアセットを登録
         bevy::asset::embedded_asset!(app, "player.png");
-        app.add_systems(Startup, load_textures);
+        let asset_server = app.world().resource::&lt;AssetServer&gt;();
+        app.insert_resource(TextureHandles {
+            player_texture: asset_server.load("embedded://game/textures/player.png"),
+        });
     }
-}
-
-fn load_textures(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
-    let player_texture_handle = asset_server.load("embedded://game/textures/player.png");
-
-    commands.insert_resource(TextureHandles {
-        player_texture: player_texture_handle,
-    });
 }
 <span class="boring">}</span></code></pre>
 <p>ではいよいよPlayerをゲーム上にスポーンさせます。Playerは<code>GameState</code>が<code>Playing</code>になったときにスポーンさせます。<code>src/playing.rs</code>というファイルを作成し、以下のコードを追加します。<code>setup</code>システムは、<code>GameState</code>が<code>Playing</code>になったときに呼ばれ、ワールドにプレイヤーやカメラをスポーンします。</p>
@@ -441,27 +436,25 @@ pub struct PlayingPlugin;
 
 impl Plugin for PlayingPlugin {
     fn build(&amp;self, app: &amp;mut App) {
-        app.add_systems(OnEnter(GameState::Playing), setup);
+        app.add_systems(Startup, setup_camera)
+            .add_systems(OnEnter(GameState::Playing), setup);
     }
+}
+
+fn setup_camera(mut commands: Commands) {
+    commands.spawn(Camera2d);
 }
 
 // ゲームプレイ状態に入ったときに呼び出されるシステム
 fn setup(
     mut commands: Commands,
-    asset_server: Res&lt;AssetServer&gt;,
-    textures: Option&lt;Res&lt;crate::textures::TextureHandles&gt;&gt;,
-    cameras: Query&lt;Entity, With&lt;Camera2d&gt;&gt;,
+    textures: Res&lt;crate::textures::TextureHandles&gt;,
 ) {
-    // テクスチャがリソースとして存在する場合はそれを使い、存在しない場合はアセットサーバーからロードする
-    let player_texture = match textures {
-        Some(textures) =&gt; textures.player_texture.clone(),
-        None =&gt; asset_server.load("embedded://game/textures/player.png"),
-    };
-    // カメラが存在しない場合は新しくカメラをスポーンする
-    if cameras.is_empty() {
-        commands.spawn(Camera2d);
-    }
-    let player = Player::spawn(&amp;mut commands, Vec3::new(-300.0, 0.0, 0.0), player_texture);
+    let player = Player::spawn(
+        &amp;mut commands,
+        Vec3::new(-300.0, 0.0, 0.0),
+        textures.player_texture.clone(),
+    );
     commands
         .entity(player)
         .insert(DespawnOnExit(GameState::Playing)); // ゲームプレイ状態を抜けるときにプレイヤーを削除するためのコンポーネントを追加

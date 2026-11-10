@@ -54,17 +54,12 @@ impl Plugin for TexturePlugin {
         // 埋め込みアセットを登録
         bevy::asset::embedded_asset!(app, "player.png");
         bevy::asset::embedded_asset!(app, "goal.png");
-        app.add_systems(Startup, load_textures);
+        let asset_server = app.world().resource::<AssetServer>();
+        app.insert_resource(TextureHandles {
+            player_texture: asset_server.load("embedded://game/textures/player.png"),
+            goal_texture: asset_server.load("embedded://game/textures/goal.png"),
+        });
     }
-}
-
-fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let player_texture_handle = asset_server.load("embedded://game/textures/player.png");
-    let goal_texture_handle = asset_server.load("embedded://game/textures/goal.png");
-    commands.insert_resource(TextureHandles {
-        player_texture: player_texture_handle,
-        goal_texture: goal_texture_handle,
-    });
 }
 ```
 
@@ -73,28 +68,21 @@ fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
 ```rust
 fn setup(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    textures: Option<Res<crate::textures::TextureHandles>>,
-    cameras: Query<Entity, With<Camera2d>>,
+    textures: Res<crate::textures::TextureHandles>,
 ) {
-    let (player_texture, goal_texture) = match textures {
-        Some(textures) => (
-            textures.player_texture.clone(),
-            textures.goal_texture.clone(),
-        ),
-        None => (
-            asset_server.load("embedded://game/textures/player.png"),
-            asset_server.load("embedded://game/textures/goal.png"),
-        ),
-    };
-    if cameras.is_empty() {
-        commands.spawn(Camera2d);
-    }
-    let player = Player::spawn(&mut commands, Vec3::new(-300.0, 0.0, 0.0), player_texture);
+    let player = Player::spawn(
+        &mut commands,
+        Vec3::new(-300.0, 0.0, 0.0),
+        textures.player_texture.clone(),
+    );
     commands
         .entity(player)
         .insert(DespawnOnExit(GameState::Playing));
-    let goal = Goal::spawn(&mut commands, Vec3::new(200.0, 0.0, 0.0), goal_texture);
+    let goal = Goal::spawn(
+        &mut commands,
+        Vec3::new(200.0, 0.0, 0.0),
+        textures.goal_texture.clone(),
+    );
     commands
         .entity(goal)
         .insert(DespawnOnExit(GameState::Playing));

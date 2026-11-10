@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-275fbc7b.js";
+            window.path_to_searchindex_js = "searchindex-c054f0e9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f8c31075.js"></script>
@@ -204,6 +204,11 @@
 <li><strong>Message</strong>
 <ul>
 <li>システム間で情報を伝達するための手段。メッセージは、イベントや通知などの形でシステム間でやり取りされます。<code>Message</code>トレイトを実装することで、BevyのECSにおいてメッセージとして扱うことができます。<code>MessageReader</code>を使ってシステム内でメッセージを受信できます。<code>MessageWriter</code>を使ってシステム内でメッセージを送信できます。</li>
+</ul>
+</li>
+<li><strong>Observer</strong>
+<ul>
+<li>エンティティで発生した特定のイベント（トリガー）に反応して実行される処理。<code>.observe()</code>でエンティティに登録し、<code>On&lt;T&gt;</code>でトリガーの情報を受け取ります。毎フレーム実行される通常のシステムとは異なり、登録したエンティティでイベントが発生したときだけ実行されます。</li>
 </ul>
 </li>
 <li><strong>State</strong>

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-275fbc7b.js";
+            window.path_to_searchindex_js = "searchindex-c054f0e9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f8c31075.js"></script>
@@ -207,13 +207,13 @@ opt-level = 3
 dynamic_linking = ["bevy/dynamic_linking"]
 
 [dependencies]
-bevy = "0.18.1"
+bevy = "0.20.1"
 bevy_rapier2d = "0.33"
 serde = { version = "1.0", features = ["derive"] }
 toml = "1.1"
 anyhow = "1.0"
 </code></pre>
-<p>Bevyを使えるようにするために、<code>[dependencies]</code>のところに<code>bevy = "0.18.1"</code>を追加しました。<br>
+<p>Bevyを使えるようにするために、<code>[dependencies]</code>のところに<code>bevy = "0.20.1"</code>を追加しました。<br>
 また、<code>bevy_rapier2d</code>は物理演算を行うためのライブラリで、<code>serde</code>はデータのシリアライズ/デシリアライズを行うためのライブラリ、<code>toml</code>はTOML形式のデータを扱うためのライブラリ、<code>anyhow</code>はエラー処理を簡単にするためのライブラリです。<br></p>
 <blockquote>
 <p>クレート(crate)は、Rustコンパイラが一度に考慮する最小限のコードです。クレートは2種類の形態のうちいずれかです:バイナリクレートか、ライブラリクレートです。<strong>バイナリクレート</strong>(binary crate)は、

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-275fbc7b.js";
+            window.path_to_searchindex_js = "searchindex-c054f0e9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f8c31075.js"></script>
@@ -227,17 +227,12 @@ impl Plugin for TexturePlugin {
         // 埋め込みアセットを登録
         bevy::asset::embedded_asset!(app, "player.png");
         bevy::asset::embedded_asset!(app, "goal.png");
-        app.add_systems(Startup, load_textures);
+        let asset_server = app.world().resource::&lt;AssetServer&gt;();
+        app.insert_resource(TextureHandles {
+            player_texture: asset_server.load("embedded://game/textures/player.png"),
+            goal_texture: asset_server.load("embedded://game/textures/goal.png"),
+        });
     }
-}
-
-fn load_textures(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
-    let player_texture_handle = asset_server.load("embedded://game/textures/player.png");
-    let goal_texture_handle = asset_server.load("embedded://game/textures/goal.png");
-    commands.insert_resource(TextureHandles {
-        player_texture: player_texture_handle,
-        goal_texture: goal_texture_handle,
-    });
 }
 <span class="boring">}</span></code></pre>
 <p>また、<code>src/playing.rs</code>の<code>setup</code>関数内でゴールの家をスポーンさせます。</p>
@@ -245,28 +240,21 @@ fn load_textures(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
 </span><span class="boring">fn main() {
 </span>fn setup(
     mut commands: Commands,
-    asset_server: Res&lt;AssetServer&gt;,
-    textures: Option&lt;Res&lt;crate::textures::TextureHandles&gt;&gt;,
-    cameras: Query&lt;Entity, With&lt;Camera2d&gt;&gt;,
+    textures: Res&lt;crate::textures::TextureHandles&gt;,
 ) {
-    let (player_texture, goal_texture) = match textures {
-        Some(textures) =&gt; (
-            textures.player_texture.clone(),
-            textures.goal_texture.clone(),
-        ),
-        None =&gt; (
-            asset_server.load("embedded://game/textures/player.png"),
-            asset_server.load("embedded://game/textures/goal.png"),
-        ),
-    };
-    if cameras.is_empty() {
-        commands.spawn(Camera2d);
-    }
-    let player = Player::spawn(&amp;mut commands, Vec3::new(-300.0, 0.0, 0.0), player_texture);
+    let player = Player::spawn(
+        &amp;mut commands,
+        Vec3::new(-300.0, 0.0, 0.0),
+        textures.player_texture.clone(),
+    );
     commands
         .entity(player)
         .insert(DespawnOnExit(GameState::Playing));
-    let goal = Goal::spawn(&amp;mut commands, Vec3::new(200.0, 0.0, 0.0), goal_texture);
+    let goal = Goal::spawn(
+        &amp;mut commands,
+        Vec3::new(200.0, 0.0, 0.0),
+        textures.goal_texture.clone(),
+    );
     commands
         .entity(goal)
         .insert(DespawnOnExit(GameState::Playing));

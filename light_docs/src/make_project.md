@@ -42,13 +42,13 @@ opt-level = 3
 dynamic_linking = ["bevy/dynamic_linking"]
 
 [dependencies]
-bevy = "0.18.1"
+bevy = "0.20.1"
 bevy_rapier2d = "0.33"
 serde = { version = "1.0", features = ["derive"] }
 toml = "1.1"
 anyhow = "1.0"
 ```
-Bevyを使えるようにするために、`[dependencies]`のところに`bevy = "0.18.1"`を追加しました。<br>
+Bevyを使えるようにするために、`[dependencies]`のところに`bevy = "0.20.1"`を追加しました。<br>
 また、`bevy_rapier2d`は物理演算を行うためのライブラリで、`serde`はデータのシリアライズ/デシリアライズを行うためのライブラリ、`toml`はTOML形式のデータを扱うためのライブラリ、`anyhow`はエラー処理を簡単にするためのライブラリです。<br>
 
 > クレート(crate)は、Rustコンパイラが一度に考慮する最小限のコードです。クレートは2種類の形態のうちいずれかです:バイナリクレートか、ライブラリクレートです。**バイナリクレート**(binary crate)は、

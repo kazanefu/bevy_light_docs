@@ -83,23 +83,21 @@ impl Plugin for FontsPlugin {
     fn build(&self, app: &mut App) {
         // 埋め込みフォントを追加
         bevy::asset::embedded_asset!(app, "NotoSansJP-Bold.ttf");
-        app.add_systems(Startup, setup_fonts);
+        let font = app.world().resource::<AssetServer>().load(FONT_PATH);
+        app.insert_resource(JpFont(font));
     }
-}
-
-// 日本語フォントをロードしてリソースとして登録するシステム
-fn setup_fonts(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // フォントをロード
-    let jp_font_handle = asset_server.load(FONT_PATH);
-    // フォントをリソースとして登録
-    commands.insert_resource(JpFont(jp_font_handle));
 }
 ```
 
-UIを作成します。`src/ending/ui.rs`というファイルを作成し、ゲーム終了時のUIを表示するシステムを追加します。`restart_button_system`システムでリスタートボタンを押すと、ゲーム状態を`Playing`に戻し、ゲームをリスタートできるようにします。
+UIを作成します。`src/ending/ui.rs`というファイルを作成し、ゲーム終了時のUIを表示するシステムを追加します。`restart_button`オブザーバーでリスタートボタンが有効化されると、ゲーム状態を`Playing`に戻してゲームをリスタートします。
+
+オブザーバーは、特定のエンティティで発生したイベントをきっかけに呼び出される処理です。通常のシステムが毎フレーム実行されるのに対して、オブザーバーは監視対象のエンティティで指定したトリガーが発生したときだけ実行されます。ここでは`Activate`がボタンのクリックに相当し、`On<Activate>`でそのイベントを受け取ります。`.observe(restart_button)`をボタンに付けることで、そのボタンが有効化されたときに`restart_button`が呼び出されます。
 ```rust
 use crate::{ending::EndingMessage, state::GameState};
 use bevy::prelude::*;
+use bevy::picking::hover::Hovered;
+use bevy::ui::Pressed;
+use bevy::ui_widgets::{Activate, Button};
 
 // リスタートボタンのコンポーネント
 #[derive(Component)]
@@ -112,38 +110,34 @@ impl Plugin for EndingUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            restart_button_system.in_set(crate::game_play_set::GamePlaySet::Input),
+            update_restart_button.in_set(crate::game_play_set::GamePlaySet::Input),
         )
         .add_systems(OnEnter(GameState::Ending), spawn_ending_ui);
     }
 }
 
-// リスタートボタンが押されたときにゲーム状態をPlayingに変更するシステム
-fn restart_button_system(
-    mut button_query: Query<
-        (&Interaction, &mut BackgroundColor),
-        (With<RestartButton>, Changed<Interaction>),
-    >,
+fn update_restart_button(
+    mut button_query: Query<(&Hovered, Has<Pressed>, &mut BackgroundColor), With<RestartButton>>,
+) {
+    for (hovered, pressed, mut color) in &mut button_query {
+        color.0 = if pressed {
+            Color::srgb(0.35, 0.75, 0.35)
+        } else if hovered.get() {
+            Color::srgb(0.25, 0.25, 0.25)
+        } else {
+            Color::srgb(0.15, 0.15, 0.15)
+        };
+    }
+}
+
+fn restart_button(
+    _activate: On<Activate>,
     mut state: ResMut<NextState<GameState>>,
     mut ending_state: ResMut<super::EndingState>,
 ) {
-    for (interaction, mut color) in &mut button_query {
-        // ボタンの状態に応じて色を変更する
-        match *interaction {
-            Interaction::Pressed => {
-                color.0 = Color::srgb(0.35, 0.75, 0.35);
-                debug!(target: "game", "Restart button clicked!");
-                state.set(GameState::Playing);
-                ending_state.message = None;
-            }
-            Interaction::Hovered => {
-                color.0 = Color::srgb(0.25, 0.25, 0.25);
-            }
-            Interaction::None => {
-                color.0 = Color::srgb(0.15, 0.15, 0.15);
-            }
-        }
-    }
+    debug!(target: "game", "Restart button clicked!");
+    state.set(GameState::Playing);
+    ending_state.message = None;
 }
 
 // ゲーム終了時のUIを生成するシステム
@@ -181,17 +175,18 @@ pub fn spawn_ending_ui(
             },
             Text::new(ending.text()),
             TextFont {
-                font: jp_font.0.clone(),
-                font_size: 50.0,
+                font: jp_font.0.clone().into(),
+                font_size: FontSize::Px(50.0),
                 ..default()
             },
-            TextLayout::new_with_justify(Justify::Center),
+            TextLayout::justify(Justify::Center),
             TextColor(Color::WHITE),
         ))
         .id();
     let restart_button = commands
         .spawn((
             Button,
+            Hovered::default(),
             RestartButton,
             Node {
                 width: px(200.0),
@@ -208,14 +203,15 @@ pub fn spawn_ending_ui(
                 },
                 Text::new("Restart"),
                 TextFont {
-                    font: jp_font.0.clone(),
-                    font_size: 30.0,
+                    font: jp_font.0.clone().into(),
+                    font_size: FontSize::Px(30.0),
                     ..default()
                 },
-                TextLayout::new_with_justify(Justify::Center),
+                TextLayout::justify(Justify::Center),
                 TextColor(Color::WHITE),
             ],
         ))
+        .observe(restart_button)
         .id();
     // canvasの子としてtextとrestart_buttonを追加
     commands

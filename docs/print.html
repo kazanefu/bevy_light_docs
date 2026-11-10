@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-275fbc7b.js";
+            window.path_to_searchindex_js = "searchindex-c054f0e9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f8c31075.js"></script>
@@ -297,13 +297,13 @@ opt-level = 3
 dynamic_linking = ["bevy/dynamic_linking"]
 
 [dependencies]
-bevy = "0.18.1"
+bevy = "0.20.1"
 bevy_rapier2d = "0.33"
 serde = { version = "1.0", features = ["derive"] }
 toml = "1.1"
 anyhow = "1.0"
 </code></pre>
-<p>Bevyを使えるようにするために、<code>[dependencies]</code>のところに<code>bevy = "0.18.1"</code>を追加しました。<br>
+<p>Bevyを使えるようにするために、<code>[dependencies]</code>のところに<code>bevy = "0.20.1"</code>を追加しました。<br>
 また、<code>bevy_rapier2d</code>は物理演算を行うためのライブラリで、<code>serde</code>はデータのシリアライズ/デシリアライズを行うためのライブラリ、<code>toml</code>はTOML形式のデータを扱うためのライブラリ、<code>anyhow</code>はエラー処理を簡単にするためのライブラリです。<br></p>
 <blockquote>
 <p>クレート(crate)は、Rustコンパイラが一度に考慮する最小限のコードです。クレートは2種類の形態のうちいずれかです:バイナリクレートか、ライブラリクレートです。<strong>バイナリクレート</strong>(binary crate)は、
@@ -756,7 +756,7 @@ pub fn move_player(
 ) {
     for (mut velocity, player) in &amp;mut query {
         // プレイヤーの速度を設定
-        velocity.linvel = move_direction.0 * player.speed;
+        velocity.linear = move_direction.0 * player.speed;
     }
 }
 <span class="boring">}</span></code></pre>
@@ -773,7 +773,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 <span class="boring">}</span></code></pre>
-<p>これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。<code>src/textures/mod.rs</code>というファイルを作成し、また、<code>src/textures/player.png</code>という画像を用意します。<code>src/textures/mod.rs</code>には以下のコードを追加します。<code>TextureHandles</code>というリソースを作成し、そこにプレイヤーのテクスチャを保持します。毎回<code>asset_server.load</code>でテクスチャを読み込むのは非効率なので、最初に読み込んでリソースとして保持しておきます。</p>
+<p>これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。<code>src/textures/mod.rs</code>というファイルを作成し、また、<code>src/textures/player.png</code>という画像を用意します。<code>src/textures/mod.rs</code>には以下のコードを追加します。<code>TextureHandles</code>というリソースを作成し、そこにプレイヤーのテクスチャを保持しておきます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bevy::prelude::*;
@@ -790,16 +790,11 @@ impl Plugin for TexturePlugin {
     fn build(&amp;self, app: &amp;mut App) {
         // 埋め込みアセットを登録
         bevy::asset::embedded_asset!(app, "player.png");
-        app.add_systems(Startup, load_textures);
+        let asset_server = app.world().resource::&lt;AssetServer&gt;();
+        app.insert_resource(TextureHandles {
+            player_texture: asset_server.load("embedded://game/textures/player.png"),
+        });
     }
-}
-
-fn load_textures(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
-    let player_texture_handle = asset_server.load("embedded://game/textures/player.png");
-
-    commands.insert_resource(TextureHandles {
-        player_texture: player_texture_handle,
-    });
 }
 <span class="boring">}</span></code></pre>
 <p>ではいよいよPlayerをゲーム上にスポーンさせます。Playerは<code>GameState</code>が<code>Playing</code>になったときにスポーンさせます。<code>src/playing.rs</code>というファイルを作成し、以下のコードを追加します。<code>setup</code>システムは、<code>GameState</code>が<code>Playing</code>になったときに呼ばれ、ワールドにプレイヤーやカメラをスポーンします。</p>
@@ -812,27 +807,25 @@ pub struct PlayingPlugin;
 
 impl Plugin for PlayingPlugin {
     fn build(&amp;self, app: &amp;mut App) {
-        app.add_systems(OnEnter(GameState::Playing), setup);
+        app.add_systems(Startup, setup_camera)
+            .add_systems(OnEnter(GameState::Playing), setup);
     }
+}
+
+fn setup_camera(mut commands: Commands) {
+    commands.spawn(Camera2d);
 }
 
 // ゲームプレイ状態に入ったときに呼び出されるシステム
 fn setup(
     mut commands: Commands,
-    asset_server: Res&lt;AssetServer&gt;,
-    textures: Option&lt;Res&lt;crate::textures::TextureHandles&gt;&gt;,
-    cameras: Query&lt;Entity, With&lt;Camera2d&gt;&gt;,
+    textures: Res&lt;crate::textures::TextureHandles&gt;,
 ) {
-    // テクスチャがリソースとして存在する場合はそれを使い、存在しない場合はアセットサーバーからロードする
-    let player_texture = match textures {
-        Some(textures) =&gt; textures.player_texture.clone(),
-        None =&gt; asset_server.load("embedded://game/textures/player.png"),
-    };
-    // カメラが存在しない場合は新しくカメラをスポーンする
-    if cameras.is_empty() {
-        commands.spawn(Camera2d);
-    }
-    let player = Player::spawn(&amp;mut commands, Vec3::new(-300.0, 0.0, 0.0), player_texture);
+    let player = Player::spawn(
+        &amp;mut commands,
+        Vec3::new(-300.0, 0.0, 0.0),
+        textures.player_texture.clone(),
+    );
     commands
         .entity(player)
         .insert(DespawnOnExit(GameState::Playing)); // ゲームプレイ状態を抜けるときにプレイヤーを削除するためのコンポーネントを追加
@@ -903,17 +896,12 @@ impl Plugin for TexturePlugin {
         // 埋め込みアセットを登録
         bevy::asset::embedded_asset!(app, "player.png");
         bevy::asset::embedded_asset!(app, "goal.png");
-        app.add_systems(Startup, load_textures);
+        let asset_server = app.world().resource::&lt;AssetServer&gt;();
+        app.insert_resource(TextureHandles {
+            player_texture: asset_server.load("embedded://game/textures/player.png"),
+            goal_texture: asset_server.load("embedded://game/textures/goal.png"),
+        });
     }
-}
-
-fn load_textures(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
-    let player_texture_handle = asset_server.load("embedded://game/textures/player.png");
-    let goal_texture_handle = asset_server.load("embedded://game/textures/goal.png");
-    commands.insert_resource(TextureHandles {
-        player_texture: player_texture_handle,
-        goal_texture: goal_texture_handle,
-    });
 }
 <span class="boring">}</span></code></pre>
 <p>また、<code>src/playing.rs</code>の<code>setup</code>関数内でゴールの家をスポーンさせます。</p>
@@ -921,28 +909,21 @@ fn load_textures(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
 </span><span class="boring">fn main() {
 </span>fn setup(
     mut commands: Commands,
-    asset_server: Res&lt;AssetServer&gt;,
-    textures: Option&lt;Res&lt;crate::textures::TextureHandles&gt;&gt;,
-    cameras: Query&lt;Entity, With&lt;Camera2d&gt;&gt;,
+    textures: Res&lt;crate::textures::TextureHandles&gt;,
 ) {
-    let (player_texture, goal_texture) = match textures {
-        Some(textures) =&gt; (
-            textures.player_texture.clone(),
-            textures.goal_texture.clone(),
-        ),
-        None =&gt; (
-            asset_server.load("embedded://game/textures/player.png"),
-            asset_server.load("embedded://game/textures/goal.png"),
-        ),
-    };
-    if cameras.is_empty() {
-        commands.spawn(Camera2d);
-    }
-    let player = Player::spawn(&amp;mut commands, Vec3::new(-300.0, 0.0, 0.0), player_texture);
+    let player = Player::spawn(
+        &amp;mut commands,
+        Vec3::new(-300.0, 0.0, 0.0),
+        textures.player_texture.clone(),
+    );
     commands
         .entity(player)
         .insert(DespawnOnExit(GameState::Playing));
-    let goal = Goal::spawn(&amp;mut commands, Vec3::new(200.0, 0.0, 0.0), goal_texture);
+    let goal = Goal::spawn(
+        &amp;mut commands,
+        Vec3::new(200.0, 0.0, 0.0),
+        textures.goal_texture.clone(),
+    );
     commands
         .entity(goal)
         .insert(DespawnOnExit(GameState::Playing));
@@ -1093,23 +1074,20 @@ impl Plugin for FontsPlugin {
     fn build(&amp;self, app: &amp;mut App) {
         // 埋め込みフォントを追加
         bevy::asset::embedded_asset!(app, "NotoSansJP-Bold.ttf");
-        app.add_systems(Startup, setup_fonts);
+        let font = app.world().resource::&lt;AssetServer&gt;().load(FONT_PATH);
+        app.insert_resource(JpFont(font));
     }
 }
-
-// 日本語フォントをロードしてリソースとして登録するシステム
-fn setup_fonts(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
-    // フォントをロード
-    let jp_font_handle = asset_server.load(FONT_PATH);
-    // フォントをリソースとして登録
-    commands.insert_resource(JpFont(jp_font_handle));
-}
 <span class="boring">}</span></code></pre>
-<p>UIを作成します。<code>src/ending/ui.rs</code>というファイルを作成し、ゲーム終了時のUIを表示するシステムを追加します。<code>restart_button_system</code>システムでリスタートボタンを押すと、ゲーム状態を<code>Playing</code>に戻し、ゲームをリスタートできるようにします。</p>
+<p>UIを作成します。<code>src/ending/ui.rs</code>というファイルを作成し、ゲーム終了時のUIを表示するシステムを追加します。<code>restart_button</code>オブザーバーでリスタートボタンが有効化されると、ゲーム状態を<code>Playing</code>に戻してゲームをリスタートします。</p>
+<p>オブザーバーは、特定のエンティティで発生したイベントをきっかけに呼び出される処理です。通常のシステムが毎フレーム実行されるのに対して、オブザーバーは監視対象のエンティティで指定したトリガーが発生したときだけ実行されます。ここでは<code>Activate</code>がボタンのクリックに相当し、<code>On&lt;Activate&gt;</code>でそのイベントを受け取ります。<code>.observe(restart_button)</code>をボタンに付けることで、そのボタンが有効化されたときに<code>restart_button</code>が呼び出されます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use crate::{ending::EndingMessage, state::GameState};
 use bevy::prelude::*;
+use bevy::picking::hover::Hovered;
+use bevy::ui::Pressed;
+use bevy::ui_widgets::{Activate, Button};
 
 // リスタートボタンのコンポーネント
 #[derive(Component)]
@@ -1122,38 +1100,34 @@ impl Plugin for EndingUiPlugin {
     fn build(&amp;self, app: &amp;mut App) {
         app.add_systems(
             Update,
-            restart_button_system.in_set(crate::game_play_set::GamePlaySet::Input),
+            update_restart_button.in_set(crate::game_play_set::GamePlaySet::Input),
         )
         .add_systems(OnEnter(GameState::Ending), spawn_ending_ui);
     }
 }
 
-// リスタートボタンが押されたときにゲーム状態をPlayingに変更するシステム
-fn restart_button_system(
-    mut button_query: Query&lt;
-        (&amp;Interaction, &amp;mut BackgroundColor),
-        (With&lt;RestartButton&gt;, Changed&lt;Interaction&gt;),
-    &gt;,
+fn update_restart_button(
+    mut button_query: Query&lt;(&amp;Hovered, Has&lt;Pressed&gt;, &amp;mut BackgroundColor), With&lt;RestartButton&gt;&gt;,
+) {
+    for (hovered, pressed, mut color) in &amp;mut button_query {
+        color.0 = if pressed {
+            Color::srgb(0.35, 0.75, 0.35)
+        } else if hovered.get() {
+            Color::srgb(0.25, 0.25, 0.25)
+        } else {
+            Color::srgb(0.15, 0.15, 0.15)
+        };
+    }
+}
+
+fn restart_button(
+    _activate: On&lt;Activate&gt;,
     mut state: ResMut&lt;NextState&lt;GameState&gt;&gt;,
     mut ending_state: ResMut&lt;super::EndingState&gt;,
 ) {
-    for (interaction, mut color) in &amp;mut button_query {
-        // ボタンの状態に応じて色を変更する
-        match *interaction {
-            Interaction::Pressed =&gt; {
-                color.0 = Color::srgb(0.35, 0.75, 0.35);
-                debug!(target: "game", "Restart button clicked!");
-                state.set(GameState::Playing);
-                ending_state.message = None;
-            }
-            Interaction::Hovered =&gt; {
-                color.0 = Color::srgb(0.25, 0.25, 0.25);
-            }
-            Interaction::None =&gt; {
-                color.0 = Color::srgb(0.15, 0.15, 0.15);
-            }
-        }
-    }
+    debug!(target: "game", "Restart button clicked!");
+    state.set(GameState::Playing);
+    ending_state.message = None;
 }
 
 // ゲーム終了時のUIを生成するシステム
@@ -1191,17 +1165,18 @@ pub fn spawn_ending_ui(
             },
             Text::new(ending.text()),
             TextFont {
-                font: jp_font.0.clone(),
-                font_size: 50.0,
+                font: jp_font.0.clone().into(),
+                font_size: FontSize::Px(50.0),
                 ..default()
             },
-            TextLayout::new_with_justify(Justify::Center),
+            TextLayout::justify(Justify::Center),
             TextColor(Color::WHITE),
         ))
         .id();
     let restart_button = commands
         .spawn((
             Button,
+            Hovered::default(),
             RestartButton,
             Node {
                 width: px(200.0),
@@ -1218,14 +1193,15 @@ pub fn spawn_ending_ui(
                 },
                 Text::new("Restart"),
                 TextFont {
-                    font: jp_font.0.clone(),
-                    font_size: 30.0,
+                    font: jp_font.0.clone().into(),
+                    font_size: FontSize::Px(30.0),
                     ..default()
                 },
-                TextLayout::new_with_justify(Justify::Center),
+                TextLayout::justify(Justify::Center),
                 TextColor(Color::WHITE),
             ],
         ))
+        .observe(restart_button)
         .id();
     // canvasの子としてtextとrestart_buttonを追加
     commands
@@ -1345,6 +1321,11 @@ fn check_collisions(
 <li><strong>Message</strong>
 <ul>
 <li>システム間で情報を伝達するための手段。メッセージは、イベントや通知などの形でシステム間でやり取りされます。<code>Message</code>トレイトを実装することで、BevyのECSにおいてメッセージとして扱うことができます。<code>MessageReader</code>を使ってシステム内でメッセージを受信できます。<code>MessageWriter</code>を使ってシステム内でメッセージを送信できます。</li>
+</ul>
+</li>
+<li><strong>Observer</strong>
+<ul>
+<li>エンティティで発生した特定のイベント（トリガー）に反応して実行される処理。<code>.observe()</code>でエンティティに登録し、<code>On&lt;T&gt;</code>でトリガーの情報を受け取ります。毎フレーム実行される通常のシステムとは異なり、登録したエンティティでイベントが発生したときだけ実行されます。</li>
 </ul>
 </li>
 <li><strong>State</strong>

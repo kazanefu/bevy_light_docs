@@ -213,7 +213,7 @@ pub fn move_player(
 ) {
     for (mut velocity, player) in &mut query {
         // プレイヤーの速度を設定
-        velocity.linvel = move_direction.0 * player.speed;
+        velocity.linear = move_direction.0 * player.speed;
     }
 }
 ```
@@ -232,7 +232,7 @@ impl Plugin for PlayerPlugin {
 }
 ```
 
-これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。`src/textures/mod.rs`というファイルを作成し、また、`src/textures/player.png`という画像を用意します。`src/textures/mod.rs`には以下のコードを追加します。`TextureHandles`というリソースを作成し、そこにプレイヤーのテクスチャを保持します。毎回``asset_server.load``でテクスチャを読み込むのは非効率なので、最初に読み込んでリソースとして保持しておきます。
+これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。`src/textures/mod.rs`というファイルを作成し、また、`src/textures/player.png`という画像を用意します。`src/textures/mod.rs`には以下のコードを追加します。`TextureHandles`というリソースを作成し、そこにプレイヤーのテクスチャを保持しておきます。
 
 ```rust
 use bevy::prelude::*;
@@ -249,16 +249,11 @@ impl Plugin for TexturePlugin {
     fn build(&self, app: &mut App) {
         // 埋め込みアセットを登録
         bevy::asset::embedded_asset!(app, "player.png");
-        app.add_systems(Startup, load_textures);
+        let asset_server = app.world().resource::<AssetServer>();
+        app.insert_resource(TextureHandles {
+            player_texture: asset_server.load("embedded://game/textures/player.png"),
+        });
     }
-}
-
-fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let player_texture_handle = asset_server.load("embedded://game/textures/player.png");
-
-    commands.insert_resource(TextureHandles {
-        player_texture: player_texture_handle,
-    });
 }
 ```
 
@@ -271,27 +266,25 @@ pub struct PlayingPlugin;
 
 impl Plugin for PlayingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Playing), setup);
+        app.add_systems(Startup, setup_camera)
+            .add_systems(OnEnter(GameState::Playing), setup);
     }
+}
+
+fn setup_camera(mut commands: Commands) {
+    commands.spawn(Camera2d);
 }
 
 // ゲームプレイ状態に入ったときに呼び出されるシステム
 fn setup(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    textures: Option<Res<crate::textures::TextureHandles>>,
-    cameras: Query<Entity, With<Camera2d>>,
+    textures: Res<crate::textures::TextureHandles>,
 ) {
-    // テクスチャがリソースとして存在する場合はそれを使い、存在しない場合はアセットサーバーからロードする
-    let player_texture = match textures {
-        Some(textures) => textures.player_texture.clone(),
-        None => asset_server.load("embedded://game/textures/player.png"),
-    };
-    // カメラが存在しない場合は新しくカメラをスポーンする
-    if cameras.is_empty() {
-        commands.spawn(Camera2d);
-    }
-    let player = Player::spawn(&mut commands, Vec3::new(-300.0, 0.0, 0.0), player_texture);
+    let player = Player::spawn(
+        &mut commands,
+        Vec3::new(-300.0, 0.0, 0.0),
+        textures.player_texture.clone(),
+    );
     commands
         .entity(player)
         .insert(DespawnOnExit(GameState::Playing)); // ゲームプレイ状態を抜けるときにプレイヤーを削除するためのコンポーネントを追加
