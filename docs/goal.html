@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f93ab711.js";
+            window.path_to_searchindex_js = "searchindex-04a54d09.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f8c31075.js"></script>
@@ -175,7 +175,7 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="家を配置当たり判定を付けよう"><a class="header" href="#家を配置当たり判定を付けよう">家を配置、当たり判定を付けよう</a></h1>
-<p>プレイヤー同様に、ゴールの家も配置します。<code>src/gaol.rs</code>というファイルを作成し、以下のように書きます。</p>
+<p>プレイヤー同様に、ゴールの家も配置します。<code>src/goal.rs</code>というファイルを作成し、以下のように書きます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bevy::prelude::*;
@@ -207,7 +207,7 @@ impl Goal {
     }
 }
 <span class="boring">}</span></code></pre>
-<p><code>src/texturers/gaol.png</code>という画像を用意して、ゴールの家の見た目として使います。また、プレイヤー同様に<code>TextureHandles</code>リソースにゴールのテクスチャを追加します。</p>
+<p><code>src/textures/goal.png</code>という画像を用意して、ゴールの家の見た目として使います。また、プレイヤー同様に<code>TextureHandles</code>リソースにゴールのテクスチャを追加します。</p>
 <p><code>src/textures/mod.rs</code>を以下のように書き換えます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f93ab711.js";
+            window.path_to_searchindex_js = "searchindex-04a54d09.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f8c31075.js"></script>
@@ -402,7 +402,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 <span class="boring">}</span></code></pre>
-<p>これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。<code>src/textures/mod.rs</code>というファイルを作成し、また、<code>src/textures/player.png</code>という画像を用意します。<code>src/textures/mod.rs</code>には以下のコードを追加します。<code>TextureHandles</code>というリソースを作成し、そこにプレイヤーのテクスチャを保持しておきます。</p>
+<p>これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけられるようにします。<code>src/textures/mod.rs</code>というファイルを作成し、また、<code>src/textures/player.png</code>という画像を用意します。<code>src/textures/mod.rs</code>には以下のコードを追加します。<code>TextureHandles</code>というリソースを作成し、そこにプレイヤーのテクスチャを保持しておきます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bevy::prelude::*;

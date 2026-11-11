@@ -232,7 +232,7 @@ impl Plugin for PlayerPlugin {
 }
 ```
 
-これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。`src/textures/mod.rs`というファイルを作成し、また、`src/textures/player.png`という画像を用意します。`src/textures/mod.rs`には以下のコードを追加します。`TextureHandles`というリソースを作成し、そこにプレイヤーのテクスチャを保持しておきます。
+これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけられるようにします。`src/textures/mod.rs`というファイルを作成し、また、`src/textures/player.png`という画像を用意します。`src/textures/mod.rs`には以下のコードを追加します。`TextureHandles`というリソースを作成し、そこにプレイヤーのテクスチャを保持しておきます。
 
 ```rust
 use bevy::prelude::*;

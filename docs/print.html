@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f93ab711.js";
+            window.path_to_searchindex_js = "searchindex-04a54d09.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f8c31075.js"></script>
@@ -191,7 +191,7 @@
 <h1 id="はじめに"><a class="header" href="#はじめに">はじめに</a></h1>
 <h2 id="この資料について"><a class="header" href="#この資料について">この資料について</a></h2>
 <p>この資料はGammaのBevy初心者向けBevy入門ガイドです。<br>
-「Bevyなんか一回も触ったことない」という初心者でも安心してBevyを始められるよう、基本的なところからUnityの使い方を解説し、簡単なゲームを作れるところまでリードしていきます。(Bevy公式ドキュメント<a href="https://bevy.org/">https://bevy.org/</a>)(Rust公式日本語ドキュメント<a href="https://doc.rust-jp.rs/book-ja/">https://doc.rust-jp.rs/book-ja/</a>)</p>
+「Bevyなんか一回も触ったことない」という初心者でも安心してBevyを始められるよう、基本的なところからBevyの使い方を解説し、簡単なゲームを作れるところまでリードしていきます。(Bevy公式ドキュメント<a href="https://bevy.org/">https://bevy.org/</a>)(Rust公式日本語ドキュメント<a href="https://doc.rust-jp.rs/book-ja/">https://doc.rust-jp.rs/book-ja/</a>)</p>
 <p><img src="images/first_screen_shot.png" alt=""><br></p>
 <p>↑こんな感じの帰宅ゲームを作っていきます！</p>
 <p>まずは自分のパソコンの中にBevyの作品を入れるフォルダを作成し、そこに光の資料のGoogleドライブにあるzipファイル(<a href="https://drive.google.com/file/d/1zEmmQrk4eyKeuo6VXnuEuRfCHgHhkZt4/view">Googleドライブのリンク</a>)を展開します。<br>
@@ -224,7 +224,7 @@
 <p>BevyではRustという言語でプログラムを書いていくことになります。<br>
 このガイドではVSCodeと呼ばれるテキストエディタ(テキストファイルを編集するソフト)を用いることとします。(任意のエディタを使っても構いません。なんならメモ帳でも(おすすめはしない))<br>
 公式サイト（https://code.visualstudio.com/download）にアクセスしてダウンロード、インストーラを起動して指示に従ってインストールします。基本的にデフォルトの設定で問題ないと思いますが、「PATHへの追加」の項目はONにしておきましょう。<br>
-VSCodeを起動し、拡張機能の検索欄に「rustanalyzer」と入力し、RustAnalyzerをインストールします。<br></p>
+VSCodeを起動し、拡張機能の検索欄に「rust-analyzer」と入力し、rust-analyzerをインストールします。<br></p>
 <p>次のページからゲーム制作が始まります。<br>
 途中で様々なエラーが表示されるかと思いますが、この資料のおまけページにガイドで出そうなエラー集のページを設けているので、そちらを参考にしてみたり、rustのコンパイラはエラーメッセージが非常に親切なので、ちゃんと読んでみると解決できることが多いです。また、<code>rustc --explain &lt;エラー番号&gt;</code>でエラーの詳細を確認できます。<br>
 とにかくわからないことがあれば筆者(かざね)にどしどし聞いてみてください！</p>
@@ -773,7 +773,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 <span class="boring">}</span></code></pre>
-<p>これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけれるようにします。<code>src/textures/mod.rs</code>というファイルを作成し、また、<code>src/textures/player.png</code>という画像を用意します。<code>src/textures/mod.rs</code>には以下のコードを追加します。<code>TextureHandles</code>というリソースを作成し、そこにプレイヤーのテクスチャを保持しておきます。</p>
+<p>これでプレイヤーを動かす仕組みは完成しました。次はプレイヤーの見た目をつけられるようにします。<code>src/textures/mod.rs</code>というファイルを作成し、また、<code>src/textures/player.png</code>という画像を用意します。<code>src/textures/mod.rs</code>には以下のコードを追加します。<code>TextureHandles</code>というリソースを作成し、そこにプレイヤーのテクスチャを保持しておきます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bevy::prelude::*;
@@ -844,7 +844,7 @@ fn setup(
 <span class="boring">}</span></code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="家を配置当たり判定を付けよう"><a class="header" href="#家を配置当たり判定を付けよう">家を配置、当たり判定を付けよう</a></h1>
-<p>プレイヤー同様に、ゴールの家も配置します。<code>src/gaol.rs</code>というファイルを作成し、以下のように書きます。</p>
+<p>プレイヤー同様に、ゴールの家も配置します。<code>src/goal.rs</code>というファイルを作成し、以下のように書きます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bevy::prelude::*;
@@ -876,7 +876,7 @@ impl Goal {
     }
 }
 <span class="boring">}</span></code></pre>
-<p><code>src/texturers/gaol.png</code>という画像を用意して、ゴールの家の見た目として使います。また、プレイヤー同様に<code>TextureHandles</code>リソースにゴールのテクスチャを追加します。</p>
+<p><code>src/textures/goal.png</code>という画像を用意して、ゴールの家の見た目として使います。また、プレイヤー同様に<code>TextureHandles</code>リソースにゴールのテクスチャを追加します。</p>
 <p><code>src/textures/mod.rs</code>を以下のように書き換えます。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -1330,7 +1330,7 @@ fn check_collisions(
 </li>
 <li><strong>State</strong>
 <ul>
-<li>ゲームの状態を管理するための仕組み。ステートは、ゲームの進行状況やモードを表すために使用されます。<code>State</code>トレイトを実装することで、BevyのECSにおいてステートとして扱うことができます。<code>Res&lt;State&lt;S&gt;&gt;</code>からシステム内から現在のStateを取得することができます。<code>NextState</code>を使ってシステム内でステートを変更できます。</li>
+<li>ゲームの状態を管理するための仕組み。ステートは、ゲームの進行状況やモードを表すために使用されます。<code>State</code>トレイトを実装することで、BevyのECSにおいてステートとして扱うことができます。<code>Res&lt;State&lt;S&gt;&gt;</code>からシステム内で現在のStateを取得することができます。<code>NextState</code>を使ってシステム内でステートを変更できます。</li>
 </ul>
 </li>
 <li><strong>Plugin</strong>
